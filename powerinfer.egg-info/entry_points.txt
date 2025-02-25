@@ -1,0 +1,3 @@
+[console_scripts]
+powerinfer-serve = powerinfer_server.cli:serve
+pwi = powerinfer_server.client:hello
