@@ -1,5 +1,4 @@
 [console_scripts]
-powerinfer-serve = PIserver.server:serve
 pwi = PIserver.client:hello
+pwi-serve = PIserver.server:serve
 pwi-stop = PIserver.client:stop
-

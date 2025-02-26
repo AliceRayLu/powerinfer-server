@@ -3,9 +3,14 @@ import requests
 host = "http://localhost:8000"
 
 def hello():
-    response = requests.get(host)
-    print(response.json())
+    get_simple_message(f"{host}/")
 
 def stop():
-    response = requests.get(f"{host}/kill")
-    print(response.json())    
+    get_simple_message(f"{host}/kill")
+        
+def get_simple_message(host):
+    try:
+        response = requests.get(f"{host}")
+        print(response.json().get("message"))
+    except:
+        print("Server already stopped. No response. Use `pwi-serve` to start server.")
