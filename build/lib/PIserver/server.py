@@ -13,12 +13,9 @@ import logging
 async def lifespan(app: FastAPI):
     print(f"Server successfully started. (PID: {os.getpid()}) Running at backgroud.")
     yield
-    print("Server Message: Server successfully stopped.")
 
-logging.getLogger("uvicorn").setLevel(logging.WARNING)
-logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 app = FastAPI(lifespan=lifespan)
-config = Config(app, host="0.0.0.0", port=8000)
+config = Config(app, host="0.0.0.0", port=8000, log_level="error")
 
 def run():
     server_process = Server(config)
