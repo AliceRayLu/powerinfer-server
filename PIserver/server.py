@@ -7,7 +7,7 @@ import os
 import subprocess
 import asyncio
 import socket
-import logging
+from constants import *
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-config = Config(app, host="0.0.0.0", port=8000, log_level="error")
+config = Config(app, host=POWERINFER_SERVER_HOST, port=POWERINFER_SERVE_PORT, log_level="error")
 
 def run():
     server_process = Server(config)
@@ -24,7 +24,7 @@ def run():
 def serve():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        sock.bind(('0.0.0.0', 8000))
+        sock.bind((POWERINFER_SERVER_HOST, POWERINFER_SERVE_PORT))
     except socket.error as e:
         print(f"Server is already running or port 8000 is already in use.")
         return
@@ -69,3 +69,4 @@ async def kill():
 
 if __name__ == "__main__":
     run()
+    

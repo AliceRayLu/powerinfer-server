@@ -1,4 +1,4 @@
 [console_scripts]
-pwi = PIserver.client:hello
+pwi = PIserver.client:main
 pwi-serve = PIserver.server:serve
 pwi-stop = PIserver.client:stop
