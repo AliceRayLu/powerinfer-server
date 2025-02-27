@@ -3,7 +3,9 @@ pyproject.toml
 setup.cfg
 PIserver/__init__.py
 PIserver/client.py
+PIserver/constants.py
 PIserver/server.py
+PIserver/utils.py
 powerinfer_server.egg-info/PKG-INFO
 powerinfer_server.egg-info/SOURCES.txt
 powerinfer_server.egg-info/dependency_links.txt

@@ -1,9 +1,9 @@
 import requests
 import argparse
 from pkg_resources import get_distribution
-from constants import *
+from PIserver.constants import *
 
-host = "https://" + POWERINFER_CLIENT_HOST + ":" + POWERINFER_SERVE_PORT
+host = "https://" + POWERINFER_CLIENT_HOST + ":" + str(POWERINFER_SERVE_PORT)
 
 def hello():
     get_simple_message(f"{host}/")
@@ -46,6 +46,31 @@ def main():
     run_parser.add_argument("model", help="The model name to run.")
     run_parser.add_argument("-cfg","--config", help="The configuration file to use.")
     run_parser.add_argument("-d","--local-dir", help="Run the model stored in local directory.")
+    
+    clone_parser = subparsers.add_parser("clone", help="Download a model from https://powerinfer.com or update a local model.")
+    clone_parser.add_argument("model", help="The model name to clone.")
+    clone_parser.add_argument("-r","--resume-download", help="Resume the download if the download is interrupted.", action="store_true")
+    clone_parser.add_argument("-l","--local-dir", help="Assign local storage location.")
+    clone_parser.add_argument("-v","--version", help="The model version to clone.")
+    
+    rm_parser = subparsers.add_parser("remove", help="Remove selected local or remote model.(By default local)")
+    rm_parser.add_argument("model", help="The model name to remove.")
+    rm_parser.add_argument("-l","--local", default=None, help="Remove the local model.", action="store_true")
+    rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.", action="store_true")
+    
+    cfg_parser = subparsers.add_parser("config", help="Manage the store location of models.")
+    cfg_parser.add_argument("-l","--list", help="Show current default storage location", action="store_true")
+    cfg_parser.add_argument("-c","--change", help="Change model storage location.Old models will not be moved.")
+    
+    mv_parser = subparsers.add_parser("move", help="Move a local model to another position.")
+    mv_parser.add_argument("model", help="The model directory to move.")
+    mv_parser.add_argument("--to", help="The target directory.", required=True)
+    
+    upload_parser = subparsers.add_parser("upload", help="Upload a local model to https://powerinfer.com. and get predictors.")
+    upload_parser.add_argument("model", help="The remote model repository to upload.")
+    upload_parser.add_argument("-d","--local-dir", help="The local model directory to upload.", required=True)
+    upload_parser.add_argument("--hf", help="Upload the model to huggingface hub.")
+    upload_parser.add_argument("--detail", help="Add submit description of the model.", default="")
     
     args = parser.parse_args()
     
