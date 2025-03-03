@@ -30,3 +30,7 @@ def write_rows(rows: list):
         writer = csv.writer(f)
         writer.writerow(LOCAL_LIST_HEADER)
         writer.writerows(rows)
+        
+def parse_model(name):
+    arr = name.split(':')
+    return arr[0], arr[1] if len(arr) > 1 else None
