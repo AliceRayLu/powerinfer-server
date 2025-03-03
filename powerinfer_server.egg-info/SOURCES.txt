@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 setup.cfg
+setup.py
 PIserver/__init__.py
 PIserver/client.py
 PIserver/constants.py
