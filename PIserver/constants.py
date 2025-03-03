@@ -6,4 +6,4 @@ POWERINFER_SERVE_PORT = 8000
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
 DEFAULT_CONFIG_PATH = Path.home() / ".powerinfer" / "config.json"
-DEFAULT_MODEL_PATH = Path.home() / ".powerinfer" / "models"
+DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"

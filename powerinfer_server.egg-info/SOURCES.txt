@@ -1,5 +1,4 @@
 README.md
-pyproject.toml
 setup.cfg
 setup.py
 PIserver/__init__.py

@@ -1,9 +1,38 @@
-from setuptools import setup, Command
+from setuptools import setup
 from setuptools.command.install import install
 import pathlib
 
 DEFAULT_STORAGE_PATH = pathlib.Path.home() / ".powerinfer"
+DEFAULT_CONFIG_PATH = DEFAULT_STORAGE_PATH / "config.json"
+DEFAULT_MODEL_PATH = DEFAULT_STORAGE_PATH / "models"
+DEFAULT_SSH_PUB_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa.pub"
+DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
+DEFAULT_MODEL_LIST_FILE = DEFAULT_STORAGE_PATH / "models.csv"
 
+def generate_ssh_key():
+    import paramiko
+    key = paramiko.RSAKey.generate(2048)
+    key.write_private_key_file(DEFAULT_SSH_PEM_KEY_PATH)
+    pub = key.get_base64()
+    with open(DEFAULT_SSH_PUB_KEY_PATH, 'w') as f:
+        f.write("ssh-rsa "+pub)
+        
+def generate_config_file():
+    import json
+    DEFAULT_CONFIG_PATH.touch(0o755, exist_ok=True)
+    default_config = {
+        "model_path": str(DEFAULT_MODEL_PATH),
+        # TODO：more config options
+    }
+    with open(DEFAULT_CONFIG_PATH, 'w') as f:
+        json.dump(default_config, f, indent=4)
+ 
+def generate_model_list_file():
+    import csv
+    DEFAULT_MODEL_LIST_FILE.touch(0o755, exist_ok=True)
+    with open(DEFAULT_MODEL_LIST_FILE, 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH'])   
 
 class PostInstallCommand(install):
     def run(self):
@@ -11,15 +40,10 @@ class PostInstallCommand(install):
         print(f"Starting to create default storing directory at {DEFAULT_STORAGE_PATH} ...")
         
         DEFAULT_STORAGE_PATH.mkdir(0o755, parents=True, exist_ok=True)
-
-class BeforeUninstallCommand(Command):
-    def run(self):
-        if DEFAULT_STORAGE_PATH.exists():
-            response = input(f"Do you want to remove all the model storage at {DEFAULT_STORAGE_PATH}? (y/n)")
-            if(response == "y"):
-                print(f"Starting to remove default storing directory at {DEFAULT_STORAGE_PATH}...")
-                DEFAULT_STORAGE_PATH.rmdir()
-                print("Model storage successfully removed.")
+        DEFAULT_MODEL_PATH.mkdir(0o755, parents=True, exist_ok=True)
+        generate_ssh_key()
+        generate_config_file()
+        generate_model_list_file()
 
 
 setup(
@@ -28,6 +52,5 @@ setup(
     author='ARL',
     cmdclass={
         'install': PostInstallCommand,
-        'uninstall': BeforeUninstallCommand
     }
 )
