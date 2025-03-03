@@ -2,6 +2,7 @@ import requests
 import argparse
 from pkg_resources import get_distribution
 from PIserver.constants import *
+from PIserver.utils import print_table, filter_rows, write_rows
 
 host = "https://" + POWERINFER_CLIENT_HOST + ":" + str(POWERINFER_SERVE_PORT)
 
@@ -21,11 +22,14 @@ def get_simple_message(host):
 def get_version():
     return get_distribution("powerinfer-server").version
 
-def list_models(local=True):
-    if local is None or local:
-        print("Local models:")
+def list_models(remote):
+    if remote is not None:
+        print("Remote Models:")
     else:
-        print("Remote models:")
+        print("Local Models:")
+        rows = filter_rows(lambda x: Path(x[4]).exists())
+        write_rows(rows)
+        print_table(rows, LOCAL_LIST_HEADER)   
 
 def run_model(model, config=None, local_dir=None):
     print("Run model:", model)
@@ -40,7 +44,7 @@ def main():
 
     list_parser = subparsers.add_parser("list", help="Show all the local or remote models.")
     list_parser.add_argument("-l","--local", default=None, help="List all the local models.", action="store_true")
-    list_parser.add_argument("-r","--remote", default=None, help="List all the remote models.", action="store_true")
+    list_parser.add_argument("-r","--remote", nargs='?', const=True, default=None, help="List all the remote models belongs to you. Add specific model name to show model details.")
     
     run_parser = subparsers.add_parser("run", help="Run a large language model.")
     run_parser.add_argument("model", help="The model name to run.")
@@ -54,12 +58,12 @@ def main():
     
     rm_parser = subparsers.add_parser("remove", help="Remove selected local or remote model.(By default local)")
     rm_parser.add_argument("model", help="The model name to remove.")
-    rm_parser.add_argument("-l","--local", default=None, help="Remove the local model.", action="store_true")
-    rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.", action="store_true")
+    rm_parser.add_argument("-l","--local", default=None, help="Remove the local model.")
+    rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.")
     
     cfg_parser = subparsers.add_parser("config", help="Manage the store location of models.")
     cfg_parser.add_argument("-l","--list", help="Show current default storage location", action="store_true")
-    cfg_parser.add_argument("-c","--change", help="Change model storage location.Old models will not be moved.")
+    cfg_parser.add_argument("-r","--reset", help="Change the config back into default values.")
     
     upload_parser = subparsers.add_parser("upload", help="Upload a local model to https://powerinfer.com. and get predictors.")
     upload_parser.add_argument("model", help="The remote model repository to upload.")
@@ -72,7 +76,7 @@ def main():
         print(f"powerinfer-server version {get_version()}")
         return
     elif args.command == "list":
-        list_models(args.local)
+        list_models(args.remote)
     elif args.command == "run":
         print("Run model:", args.model)
         print("Config:", args.config)

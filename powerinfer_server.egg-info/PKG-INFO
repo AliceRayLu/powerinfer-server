@@ -13,7 +13,7 @@ Description-Content-Type: text/markdown
 Requires-Dist: fastapi>=0.68.0
 Requires-Dist: uvicorn>=0.15.0
 Requires-Dist: pathlib>=1.0.1
-Requires-Dist: paramiko>=3.5.1
+Requires-Dist: paramiko>=2.11.0
 Dynamic: author
 
 # powerinfer-server

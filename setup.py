@@ -9,6 +9,8 @@ DEFAULT_SSH_PUB_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa.pub"
 DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
 DEFAULT_MODEL_LIST_FILE = DEFAULT_STORAGE_PATH / "models.csv"
 
+LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']
+
 def generate_ssh_key():
     import paramiko
     key = paramiko.RSAKey.generate(2048)
@@ -32,7 +34,7 @@ def generate_model_list_file():
     DEFAULT_MODEL_LIST_FILE.touch(0o755, exist_ok=True)
     with open(DEFAULT_MODEL_LIST_FILE, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH'])   
+        writer.writerow(LOCAL_LIST_HEADER)   
 
 class PostInstallCommand(install):
     def run(self):
