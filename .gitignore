@@ -1,2 +1,3 @@
 build/
 powerinfer_server.egg-info/
+PIserver/__pycache__/
