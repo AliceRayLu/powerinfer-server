@@ -1,4 +1,0 @@
-fastapi>=0.68.0
-uvicorn>=0.15.0
-pathlib>=1.0.1
-paramiko>=2.11.0

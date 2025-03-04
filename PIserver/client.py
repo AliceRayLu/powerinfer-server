@@ -2,7 +2,7 @@ import requests
 import argparse
 from pkg_resources import get_distribution
 from PIserver.constants import *
-from PIserver.utils import print_table, filter_rows, write_rows, parse_condition, remove_dir
+from PIserver.utils.csv import print_table, filter_rows, write_rows, parse_condition, remove_dir
 
 host = "https://" + POWERINFER_HOST + ":" + str(POWERINFER_SERVER_PORT)
         
@@ -14,7 +14,7 @@ def list_models(remote, model):
         print("Remote Models:")
     else:
         print("Local Models:")
-        rows = filter_rows(lambda x: True if model is None else parse_condition(model))
+        rows, rest = filter_rows(lambda x: True if model is None else parse_condition(model))
         print_table(rows, LOCAL_LIST_HEADER)   
 
 def remove_model(remote, model):
@@ -39,8 +39,11 @@ def remove_model(remote, model):
         for row in rows:
             remove_dir(row[4], row[0]+":"+row[1])
             write_rows(rest)
-            print("All the models have been removed.")
-        
+            print("Model successfully removed.")
+
+def clone_model(model, local_dir):
+    # check in the list about version and path
+    rows, rest = filter_rows(parse_condition(model))
 
 def run_model(model, config=None, local_dir=None):
     print("Run model:", model)
@@ -55,7 +58,7 @@ def main():
 
     list_parser = subparsers.add_parser("list", help="Show all the local(default) or remote models.")
     list_parser.add_argument("model", nargs='?', default=None, help="The model name to list. (Optional)")
-    list_parser.add_argument("-r","--remote", nargs='?', const=True, default=None, help="List the remote models belongs to you.")
+    list_parser.add_argument("-r","--remote", default=None, help="List the remote models belongs to you.", action="store_true")
     
     run_parser = subparsers.add_parser("run", help="Run a large language model.")
     run_parser.add_argument("model", help="The model name to run.")
@@ -64,15 +67,14 @@ def main():
     
     clone_parser = subparsers.add_parser("clone", help="Download a model from https://powerinfer.com or update a local model.")
     clone_parser.add_argument("model", help="The model name to clone.")
-    clone_parser.add_argument("-r","--resume-download", help="Resume the download if the download is interrupted.", action="store_true")
     clone_parser.add_argument("-l","--local-dir", help="Assign local storage location.")
     
     rm_parser = subparsers.add_parser("remove", help="Remove selected local or remote model.(By default local)")
     rm_parser.add_argument("model", nargs='?', help="The model name to remove. If not set, remove all the models.")
-    rm_parser.add_argument("-r","--remote", nargs='?', const=True, default=None, help="Remove the remote model.", action="store_true")
+    rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.", action="store_true")
     
     cfg_parser = subparsers.add_parser("config", help="Manage the store location of models.")
-    cfg_parser.add_argument("-l","--list", help="Show current default storage location", action="store_true")
+    cfg_parser.add_argument("-l","--list", help="Show current configurations", action="store_true")
     cfg_parser.add_argument("-r","--reset", help="Change the config back into default values.")
     
     upload_parser = subparsers.add_parser("upload", help="Upload a local model to https://powerinfer.com. and get predictors.")
@@ -93,6 +95,8 @@ def main():
         print("Local dir:", args.local_dir)
     elif args.command == "remove":
         remove_model(args.remote, args.model)
+    elif args.command == "clone":
+        clone_model(args.model, args.local_dir)
         
     
 
