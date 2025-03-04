@@ -43,6 +43,12 @@ def parse_model(name):
     arr = name.split(':')
     return arr[0], arr[1] if len(arr) > 1 else None
 
+def check_model_name_with_size(name):
+    if ':' not in name:
+        print("Please specify the model size. Format the model name like 'NAME:SIZE'.")
+        return False
+    return True
+
 def parse_condition(model):
     name, size = parse_model(model)
     if size is None:

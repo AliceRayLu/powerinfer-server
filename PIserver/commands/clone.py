@@ -10,13 +10,15 @@ class Clone_Model(Command):
         
     def execute(self, args):
         mname = args.model
-        if ':' not in mname:
-            print("Please specify the model size to clone. Format the model name like 'NAME:SIZE'.")
+        check = check_model_name_with_size(mname)
+        if not check:
             return
+        # check remote access
+        
         # check in the list about version and path
         rows, rest = filter_rows(parse_condition(mname))
         # check remote model version(metadata)
-        # before fetch, check access to the remote model
+
         if len(rows) > 0:
             # compare remote model version 
             # if same no download
