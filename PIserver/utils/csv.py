@@ -23,6 +23,7 @@ def filter_rows(check):
     check_list_file()
     with open(DEFAULT_MODEL_LIST_FILE, 'r') as f:
         reader = csv.reader(f)
+        next(reader)
         rows, rest = [], []
         for row in reader:
             if len(row) > 0 and check(row):

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-# POWERINFER_SERVER_HOST = "0.0.0.0"
 POWERINFER_HOST = "127.0.0.1"
+POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
 POWERINFER_SERVER_PORT = 8000
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
