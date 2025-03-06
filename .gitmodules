@@ -1,0 +1,3 @@
+[submodule "libs/powerinfer-cpp-python"]
+	path = libs/powerinfer-cpp-python
+	url = https://github.com/AliceRayLu/powerinfer-cpp-python.git
