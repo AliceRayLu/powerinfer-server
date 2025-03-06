@@ -1,16 +1,17 @@
 import paramiko
+import pathlib
 
 class SSHClient:
-    def __init__(self, host, port, uid, private_key_path):
+    def __init__(self, host: str, port: int, uid: str, private_key_path: pathlib.Path):
         self.host = host
         self.port = port
         self.uid = uid
-        self.private_key = paramiko.RSAKey.from_private_key_file(private_key_path)
+        self.private_key = paramiko.RSAKey.from_private_key_file(private_key_path, password="")
         
     def connect(self):
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.client.connect(self.host, self.port, self.uid, pkey=self.private_key)
+        self.client.connect(self.host, self.port, self.uid, pkey=self.private_key,password="")
         
     def download(self, remote_path, local_path):
         with self.client.open_sftp() as sftp:

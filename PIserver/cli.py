@@ -1,10 +1,7 @@
-import requests
 import argparse
 from pkg_resources import get_distribution
 from PIserver.constants import *
 from PIserver.commands import *
-
-backend_host = "https://" + POWERINFER_HOST + ":" + str(POWERINFER_SERVER_PORT)
 
         
 def get_version():

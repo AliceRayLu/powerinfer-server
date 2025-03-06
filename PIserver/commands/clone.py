@@ -1,6 +1,6 @@
 from PIserver.commands.command import Command
 from PIserver.utils.csv import *
-
+from PIserver.utils.SSHClient import SSHClient
 
 class Clone_Model(Command):
     def register_subcommand(self, subparser):
@@ -11,6 +11,7 @@ class Clone_Model(Command):
     def execute(self, args):
         mname = args.model
         check = check_model_name_with_size(mname)
+        uname = get_uname_from_model(mname)
         if not check:
             return
         # check remote access
@@ -24,4 +25,6 @@ class Clone_Model(Command):
             # if same no download
             print()
         # connect and download
+        client = SSHClient(POWERINFER_MODEL_HOST,22,"a.r.l", DEFAULT_SSH_PEM_KEY_PATH)
+        client.connect()
         # add to local model list
