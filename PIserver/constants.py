@@ -8,6 +8,7 @@ DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
 DEFAULT_CONFIG_PATH = Path.home() / ".powerinfer" / "config.json"
 DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
 DEFAULT_MODEL_LIST_FILE = DEFAULT_STORAGE_PATH / "models.csv"
+DEFAULT_INSTALL_PATH = DEFAULT_STORAGE_PATH / "engine"
 TEST_SSH_PATH = Path.home() / ".ssh" / "id_rsa"
 
 LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']

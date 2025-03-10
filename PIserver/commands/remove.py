@@ -6,6 +6,7 @@ class Remove_Models(Command):
         rm_parser = subparser.add_parser("remove", help="Remove selected local or remote model.(By default local)")
         rm_parser.add_argument("model", nargs='?', help="The model name to remove. If not set, remove all the models.")
         rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.", action="store_true")
+        rm_parser.add_argument("-i","--install", default=None, help="Remove the selected backend engine package.")
         
     def execute(self, args):
         model = args.model

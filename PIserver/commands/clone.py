@@ -7,6 +7,7 @@ class Clone_Model(Command):
         clone_parser = subparser.add_parser("clone", help="Download a model from https://powerinfer.com or update a local model.")
         clone_parser.add_argument("model", help="The model name to clone.")
         clone_parser.add_argument("-l","--local-dir", help="Assign local storage location.")
+        clone_parser.add_argument("-hf", help="Clone a runnable gguf model from huggingface.")
         
     def execute(self, args):
         mname = args.model
