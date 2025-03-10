@@ -5,7 +5,7 @@ from PIserver.utils.csv import *
 
 class List_Models(Command):
     def register_subcommand(self, subparser):
-        list_parser = subparser.add_parser("list", help="Show all the local(default) or remote models.")
+        list_parser = subparser.add_parser("list", help="Show local(default) or remote models.")
         list_parser.add_argument("model", nargs='?', default=None, help="The model name to list. (Optional)")
         list_parser.add_argument("-r","--remote", default=None, help="List the remote models belongs to you.", action="store_true")
         
