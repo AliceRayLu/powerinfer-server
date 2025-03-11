@@ -5,6 +5,12 @@ import platform
 
 from PIserver.constants import ENGINE_CHOICES
 
+def get_engine_choices():
+    return ENGINE_CHOICES[platform.system()]
+
+def get_engine_path(engine_name):
+    return ENGINE_CHOICES[platform.system()][engine_name]
+
 def display(stdscr, choices, selected, current_row):
     stdscr.clear()
     stdscr.addstr(0, 0, "Choose the installation packages (You can do it later using `powerinfer install` command):")
@@ -19,7 +25,7 @@ def display(stdscr, choices, selected, current_row):
     stdscr.refresh()
     
 def choosing(stdscr):
-    choices = ENGINE_CHOICES[platform.system()]
+    choices = get_engine_choices()
     choice_names = list(choices.keys())
     
     curses.curs_set(0)
@@ -48,7 +54,8 @@ def choosing(stdscr):
             break
     return selected
 
-def single_install(pkg_path):
+def single_install(pkg_path) -> str:
+    # return downloaded path
     print(pkg_path)
 
 def interactive_install():

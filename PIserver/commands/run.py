@@ -1,5 +1,8 @@
 from PIserver.commands.command import Command
+from PIserver.constants import *
+from pathlib import Path
 
+from PIserver.utils.files import read_file
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -9,7 +12,20 @@ class Run_Model(Command):
         run_parser.add_argument("-d","--local-dir", help="Run the model stored in local directory.")
         
     def execute(self, args):
+        cfg_file = DEFAULT_CONFIG_FILE
         if args.config is None:
             print("Running model {args.model} using default configuration...")
+        else:
+            cfg_file = Path(args.config)
+            print(f"Running model {args.model} using configuration file {args.config}...")
         # check backend engine
+        cfg = read_file(cfg_file)
+        engine = cfg['engine']
+        all_engines = read_file(DEFAULT_ENGINE_LIST_FILE)
+        if engine not in all_engines:
+            print(f"Engine {engine} not found. Please install it using `powerinfer install` first.")
+            return
+        # check engine file exists
+        
+        
         # check model existence

@@ -1,5 +1,5 @@
 from PIserver.commands.command import Command
-from PIserver.utils.csv import *
+from PIserver.utils.files import *
 
 class Remove_Models(Command):
     def register_subcommand(self, subparser):
@@ -29,7 +29,10 @@ class Remove_Models(Command):
                         return
             
             for row in rows:
-                remove_dir(row[4], row[0]+":"+row[1])
+                res = remove_dir(row[4])
+                if res != REMOVE_RESULT.SUCCESS:
+                    print(f"Error: Unable to remove model {row[0]}:{row[1]}.")
+                    return
                 write_rows(rest)
                 print("Model successfully removed.")
         

@@ -2,24 +2,53 @@ import csv
 from PIserver.constants import *
 import tabulate
 import shutil
-import pathlib
+from pathlib import Path
+import sys
+import json
+
+# All the printings
 
 def print_table(data: list, header: list):
+    '''print data in table format using tabulate'''
     print(tabulate.tabulate(data, headers=header, tablefmt="plain"))
+
+# All the file operations
+def check_existence(path):
+    return Path(path).exists()
 
 def check_list_file():
     if not DEFAULT_MODEL_LIST_FILE.exists():
         with open(DEFAULT_MODEL_LIST_FILE, 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(LOCAL_LIST_HEADER)
+            writer.writerow(LOCAL_LIST_HEADER)  
 
+def remove_dir(path):
+    path = Path(path)
+    if not path.exists():
+        return REMOVE_RESULT.NOT_FOUND
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        sys.stderr.write(f"Error removing directory {path}: {e}")
+        return REMOVE_RESULT.ERROR  
+    return REMOVE_RESULT.SUCCESS
+        
+def remove_file(path):
+    path = Path(path)
+    if path.exists():
+        path.unlink()
+        print(f"File {path} successfully removed.")        
+            
+# All the csv file operations
 def add_row(model: list):
+    '''add a row to the model list file'''
     check_list_file()
     with open(DEFAULT_MODEL_LIST_FILE, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(model)
     
 def filter_rows(check):
+    '''filter rows in the model list file'''
     check_list_file()
     with open(DEFAULT_MODEL_LIST_FILE, 'r') as f:
         reader = csv.reader(f)
@@ -33,12 +62,14 @@ def filter_rows(check):
         return rows, rest
     
 def write_rows(rows: list):
+    '''write rows to the model list file'''
     check_list_file()
     with open(DEFAULT_MODEL_LIST_FILE, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(LOCAL_LIST_HEADER)
         writer.writerows(rows)
-        
+
+# All the string operations        
 def parse_model(name):
     arr = name.split(':')
     return arr[0], arr[1] if len(arr) > 1 else None
@@ -61,9 +92,11 @@ def parse_condition(model):
     else:
         return lambda x: x[0] == name and x[1] == size
     
-def remove_dir(path: pathlib.Path, name):
-    if path.exists():
-        shutil.rmtree(path)
-        print(f"Model {name} successfully removed.")
-    else:
-        print(f"Model {name} not found.")
+# All the json file operations
+def read_file(path: Path) -> dict:
+    with open(path, 'r') as f:
+        return dict(json.load(f))
+    
+def write_file(path: Path, data: dict) -> None:
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=4)

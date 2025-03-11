@@ -1,4 +1,5 @@
 from pathlib import Path
+from enum import Enum
 
 POWERINFER_HOST = "127.0.0.1"
 POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
@@ -20,7 +21,7 @@ REMOTE_MODEL_TYPE_HEADER = ['SIZE', 'BSIZE', 'VERSION']
 
 # Engine Choices
 WINDOWS_ENGINE_CHOICES = {
-    "windows-cpu-x64": "1mmmmm",
+    "windows-cpu-x64-843195e": "1mmmmm",
     "windows-cpu-x86": "2",
     "windows-cuda-x64": "3",
     "windows-cuda-x86": "4",
@@ -38,3 +39,12 @@ ENGINE_CHOICES = {
     "Linux": LINUX_ENGINE_CHOICES,
     "Darwin": MAC_ENGINE_CHOICES
 }
+
+DEFAULT_CONFIG = {
+    
+}
+
+class REMOVE_RESULT(Enum):
+    SUCCESS = 0
+    NOT_FOUND = 1
+    ERROR = 2

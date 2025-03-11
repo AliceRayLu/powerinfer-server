@@ -26,6 +26,9 @@ def generate_config_file():
     DEFAULT_CONFIG_PATH.touch(0o755, exist_ok=True)
     default_config = {
         "model_path": str(DEFAULT_MODEL_PATH),
+        "engine": "windows-cpu-x86-843195e",
+        "threads": 4,
+        
         # TODO：more config options
     }
     with open(DEFAULT_CONFIG_PATH, 'w') as f:
