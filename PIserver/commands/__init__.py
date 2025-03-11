@@ -4,6 +4,7 @@ from .config import Config
 from .remove import Remove_Models
 from .run import Run_Model
 from .upload import Upload_Model
+from .install import Install_Backend
 
 __all__ = [
     "List_Models",
@@ -12,4 +13,5 @@ __all__ = [
     "Remove_Models",
     "Run_Model",
     "Upload_Model",
+    "Install_Backend",
 ]

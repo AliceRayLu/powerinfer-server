@@ -8,6 +8,8 @@ DEFAULT_MODEL_PATH = DEFAULT_STORAGE_PATH / "models"
 DEFAULT_SSH_PUB_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa.pub"
 DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
 DEFAULT_MODEL_LIST_FILE = DEFAULT_STORAGE_PATH / "models.csv"
+DEFAULT_INSTALL_PATH = DEFAULT_STORAGE_PATH / "engines"
+DEFAULT_ENGINE_LIST_FILE = DEFAULT_INSTALL_PATH / ".list"
 
 LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']
 
@@ -46,6 +48,8 @@ class PostInstallCommand(install):
         generate_ssh_key()
         generate_config_file()
         generate_model_list_file()
+        DEFAULT_INSTALL_PATH.mkdir(0o755, parents=True, exist_ok=True)
+        DEFAULT_ENGINE_LIST_FILE.touch(0o755, exist_ok=True)
 
 
 setup(

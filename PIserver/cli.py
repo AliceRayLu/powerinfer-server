@@ -14,6 +14,7 @@ command_map = {
     "config": Config(),
     "upload": Upload_Model(),
     "run": Run_Model(),
+    "install": Install_Backend(),
 }
     
 def create_parser():
