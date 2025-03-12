@@ -25,6 +25,9 @@ def check_list_file():
             writer = csv.writer(f)
             writer.writerow(LOCAL_LIST_HEADER)  
 
+def get_absolute_path(path):
+    return Path(path).resolve()
+
 def remove_dir(path):
     path = Path(path)
     if not path.exists():
@@ -40,8 +43,15 @@ def remove_dir(path):
 def remove_file(path):
     path = Path(path)
     if path.exists():
-        path.unlink()
-        print(f"File {path} successfully removed.")        
+        try:
+            path.unlink()
+            print(f"File {path} successfully removed.")
+            return REMOVE_RESULT.SUCCESS
+        except Exception as e:
+            log_error(f"Unable to remove file {path}: {e}")
+            return REMOVE_RESULT.ERROR
+    else:
+        return REMOVE_RESULT.NOT_FOUND
             
 # All the csv file operations
 def add_row(model: list):
