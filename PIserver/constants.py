@@ -41,7 +41,15 @@ ENGINE_CHOICES = {
 }
 
 DEFAULT_CONFIG = {
-    
+    "model_path": str(DEFAULT_MODEL_PATH),
+    "engine": "windows-cpu-x86-843195e",
+    "n-predict": 512,
+    "top-k": 40,
+    "ctx-size": 512,
+    "top-p": 0.9,
+    "min-p": 0.05,
+    "temp": 0.7,
+    "gpu-layers": 32,
 }
 
 class REMOVE_RESULT(Enum):

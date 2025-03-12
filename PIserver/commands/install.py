@@ -19,10 +19,14 @@ class Install_Backend(Command):
                     log_error(f"Engine {args.engine} not found. Please check the name or use `powerinfer list -i` to see all the available engines or install engine compiled by yourself using -f.")
                 else:
                     remote_path = get_engine_path(args.engine)
-                    self.add_engine(args.engine, single_install(remote_path))         
+                    res = self.add_engine(args.engine, single_install(remote_path))
+                    if not res:
+                        return         
             else:
                 # install from file
-                self.add_engine(args.engine, args.file)
+                res = self.add_engine(args.engine, args.file)
+                if not res:
+                    return
         else:
             interactive_install()
         print("Engine successfully installed.")
@@ -30,19 +34,20 @@ class Install_Backend(Command):
     def add_engine(self, name, path):
         if not check_existence(path):
             log_error(f"File {path} does not exist. Please check the path and try again.")
-            return
+            return False
         path = str(get_absolute_path(path))
         engines = read_file(DEFAULT_ENGINE_LIST_FILE)
         if name in engines:
             response = input(f"Engine {name} already exists. Do you want to overwrite it? (y/n)")
             if response != "y":
                 print("Installation cancelled.")
-                return
+                return False
             if engines[name] != path and check_existence(engines[name]):
                 print(f"Removing old engine file {engines[name]}...")
                 res = remove_file(engines[name])
                 if res == REMOVE_RESULT.ERROR:
                     log_error(f"Unable to remove old engine file {engines[name]}. Remove it manually or try after fixing the error.")
-                    return
+                    return False
         engines[name] = path
         write_file(DEFAULT_ENGINE_LIST_FILE, engines)
+        return True

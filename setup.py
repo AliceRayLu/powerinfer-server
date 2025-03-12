@@ -27,9 +27,13 @@ def generate_config_file():
     default_config = {
         "model_path": str(DEFAULT_MODEL_PATH),
         "engine": "windows-cpu-x86-843195e",
-        "threads": 4,
-        
-        # TODO：more config options
+        "n-predict": 512,
+        "top-k": 40,
+        "ctx-size": 512,
+        "top-p": 0.9,
+        "min-p": 0.05,
+        "temp": 0.7,
+        "gpu-layers": 32,
     }
     with open(DEFAULT_CONFIG_PATH, 'w') as f:
         json.dump(default_config, f, indent=4)
