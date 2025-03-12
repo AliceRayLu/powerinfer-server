@@ -2,7 +2,7 @@ from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
 from PIserver.utils.files import *
-import os
+import subprocess
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -32,11 +32,41 @@ class Run_Model(Command):
             return
         
         # format command
-        cmd = f"{engine} -m {mpath} -ins"
+        cmd = f"{engine} -m {mpath}"
         for option in cfg:
-            if option != "model_path" and option != "engine":
+            if self.filter_options(option):
                 cmd += f" --{option} {cfg[option] if type(cfg[option]) is not bool else ""}"
-        os.system(cmd)
+        
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        print("Loading model...")
+        
+        while True:
+            output = str(process.stdout.readline())
+            err = process.stderr.readline() if process.stderr is not None else ''
+            if err != '':
+                log_error(err)
+                return
+            if "llama server listening at" in output:
+                print("Model successfully loaded.")
+                break
+            print(output)
+            
+        try:
+            process.wait()
+        except KeyboardInterrupt:
+            process.terminate()
+            process.wait()
+            print("Model service successfully stopped.")
+        except Exception as e:
+            log_error(e)
+            process.terminate()
+            process.wait()
+            
+        return
         
         
     def check_engine(self, name):
@@ -58,3 +88,10 @@ class Run_Model(Command):
             cfg = DEFAULT_CONFIG
             write_file(cfg_file, cfg)
         return cfg
+    
+    def filter_options(self, option: str):
+        anti = ["model_path", "engine", "options"]
+        for a in anti:
+            if a == option:
+                return False
+        return True
