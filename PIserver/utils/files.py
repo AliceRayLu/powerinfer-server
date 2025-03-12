@@ -11,6 +11,9 @@ import json
 def print_table(data: list, header: list):
     '''print data in table format using tabulate'''
     print(tabulate.tabulate(data, headers=header, tablefmt="plain"))
+    
+def log_error(msg):
+    sys.stderr.write(f"Error: {msg}\n")
 
 # All the file operations
 def check_existence(path):
@@ -25,11 +28,12 @@ def check_list_file():
 def remove_dir(path):
     path = Path(path)
     if not path.exists():
+        log_error(f"Directory {path} not found.")
         return REMOVE_RESULT.NOT_FOUND
     try:
         shutil.rmtree(path)
     except Exception as e:
-        sys.stderr.write(f"Error removing directory {path}: {e}")
+        log_error(f"Unable to remove directory {path}: {e}")
         return REMOVE_RESULT.ERROR  
     return REMOVE_RESULT.SUCCESS
         
@@ -76,7 +80,7 @@ def parse_model(name):
 
 def check_model_name_with_size(name):
     if ':' not in name:
-        print("Please specify the model size. Format the model name like 'USR/NAME:SIZE'.")
+        log_error("Please specify the model size. Format the model name like 'USR/NAME:SIZE'.")
         return False
     return True
 
@@ -94,8 +98,14 @@ def parse_condition(model):
     
 # All the json file operations
 def read_file(path: Path) -> dict:
-    with open(path, 'r') as f:
-        return dict(json.load(f))
+    try:
+        with open(path, 'r') as f:
+            return dict(json.load(f))
+    except json.JSONDecodeError:
+        return {}
+    except FileNotFoundError:
+        path.touch(0o755, exist_ok=True)
+        return {}
     
 def write_file(path: Path, data: dict) -> None:
     with open(path, 'w') as f:

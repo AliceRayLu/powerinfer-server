@@ -2,7 +2,7 @@ from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
 
-from PIserver.utils.files import read_file
+from PIserver.utils.files import read_file, log_error, write_file
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -20,10 +20,13 @@ class Run_Model(Command):
             print(f"Running model {args.model} using configuration file {args.config}...")
         # check backend engine
         cfg = read_file(cfg_file)
+        if len(cfg) == 0:
+            cfg = DEFAULT_CONFIG
+            write_file(cfg_file, cfg)
         engine = cfg['engine']
         all_engines = read_file(DEFAULT_ENGINE_LIST_FILE)
         if engine not in all_engines:
-            print(f"Engine {engine} not found. Please install it using `powerinfer install` first.")
+            log_error(f"Engine {engine} not found. Please install it using `powerinfer install` first.")
             return
         # check engine file exists
         

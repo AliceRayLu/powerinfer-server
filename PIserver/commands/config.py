@@ -1,6 +1,6 @@
 from PIserver.commands.command import Command
 from PIserver.constants import DEFAULT_CONFIG, DEFAULT_CONFIG_FILE
-from PIserver.utils.files import read_file, write_file
+from PIserver.utils.files import read_file, write_file, log_error
 
 class Config(Command):
     def register_subcommand(self, subparser):
@@ -22,7 +22,7 @@ class Config(Command):
         elif args.set:
             config = read_file(DEFAULT_CONFIG_FILE)
             if '=' not in str(args.set):
-                print("Invalid format. Please use option=value.")
+                log_error("Invalid format. Please use option=value.")
                 return
             [option, value] = str(args.set).split('=')
             config[option] = value

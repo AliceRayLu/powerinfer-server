@@ -21,7 +21,7 @@ class Remove_Models(Command):
             
             if model is not None:
                 if len(rows) == 0:
-                    print(f"Unable to find model: {model} locally. Please check your models using `pwi list`.")
+                    log_error(f"Unable to find model: {model} locally. Please check your models using `pwi list`.")
                     return
                 elif len(rows) > 1:
                     response = input(f"Found multiple models with name {model}. Do you want to remove all of them? (y/n)")
@@ -31,7 +31,7 @@ class Remove_Models(Command):
             for row in rows:
                 res = remove_dir(row[4])
                 if res != REMOVE_RESULT.SUCCESS:
-                    print(f"Error: Unable to remove model {row[0]}:{row[1]}.")
+                    log_error(f"Unable to remove model {row[0]}:{row[1]}.")
                     return
                 write_rows(rest)
                 print("Model successfully removed.")
