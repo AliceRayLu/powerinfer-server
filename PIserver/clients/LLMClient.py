@@ -1,8 +1,9 @@
-from PIserver.clients.net import send_post_request
+import getpass
 import time
 import json
 import requests
 import threading
+import keyboard
 
 class LLMClient:
     def __init__(self, host):
@@ -61,10 +62,16 @@ class StopHandler():
         self.thread = threading.Thread(target=self.keyboard_listener)
         
     def keyboard_listener(self):
-        while not self.stopper.is_set():
-            if input("") == ':':
-                self.stopper.set()
-                break
+        try:
+            keyboard.wait('ctrl+c',suppress=True)
+            self.stopper.set()
+            print()
+            print("Stopping signal sent. Stop inferencing.")
+            print()
+        except KeyboardInterrupt:
+            print()
+            
+
             
     def start(self):
         self.thread.start()

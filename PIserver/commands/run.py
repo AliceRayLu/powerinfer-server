@@ -75,6 +75,11 @@ class Run_Model(Command):
             # print(output)
         
         # hint = Waiting("AI is thinking ")
+        print()
+        print("Pressing 'q' to stop inferencing.")
+        print()
+        
+        stop_handler = StopHandler()
             
         while True:
             try:
@@ -85,7 +90,6 @@ class Run_Model(Command):
                 }
                 params.update(cfg["options"])
                 
-                stop_handler = StopHandler()
                 stop_handler.start()
                 
                     # hint.start()
@@ -115,15 +119,18 @@ class Run_Model(Command):
                     # client.close()
                     # print()
             except KeyboardInterrupt:
+                print()
                 print("Trying to stop model service...")
                 process.terminate()
                 process.wait()
                 print("Model service successfully stopped.")
+                stop_handler.stop()
                 break
             except Exception as e:
                 log_error(e)
                 process.terminate()
                 process.wait()
+                stop_handler.stop()
                 break
             
         return
