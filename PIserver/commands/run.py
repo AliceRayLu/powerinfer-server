@@ -3,6 +3,8 @@ from PIserver.constants import *
 from pathlib import Path
 from PIserver.utils.files import *
 import subprocess
+from tqdm import tqdm
+from PIserver.utils.net import send_post_request 
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -17,7 +19,9 @@ class Run_Model(Command):
         # check backend engine
         engine = self.check_engine(cfg['engine'])
         if engine is None:
-            log_error(f"Unable to find {engine}. Please change an engine or install it.")
+            log_error(f"Unable to find {engine} in the installed list. Trying to install remote engine and find local files...")
+            # TODO: check local path
+            # TODO: check remote name
         
         # check model existence
         mname = str(args.model)
@@ -28,8 +32,9 @@ class Run_Model(Command):
         else:
             mpath = row[4] if check_existence(row[4]) else None
         if mpath is None:
-            log_error(f"Unable to find model {mname}. Please clone it first or use correct local model path.")
-            return
+            print(f"Unable to find model {mname} locally. Trying to download it from remote...")
+            # TODO: download model from remote
+            
         
         # format command
         cmd = f"{engine} -m {mpath}"
@@ -42,7 +47,8 @@ class Run_Model(Command):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        print("Loading model...")
+        print("Start to load model...")
+        pbar = tqdm(total=100, desc="Loading model", unit="%")
         
         while True:
             output = str(process.stdout.readline())
@@ -50,21 +56,53 @@ class Run_Model(Command):
             if err != '':
                 log_error(err)
                 return
+            
+            if pbar.n < 13 and "llama_model_loader" in output:
+                pbar.update(13-pbar.n)
+            if pbar.n < 33 and "kv" in output:
+                pbar.update(33-pbar.n)
+            if pbar.n < 40 and "llama_model_load" in output:
+                pbar.update(40-pbar.n)
+            if pbar.n < 52 and "llama_new_context" in output:
+                pbar.update(52-pbar.n)
+            if pbar.n < 71 and "llama_build_graph" in output:
+                pbar.update(71-pbar.n)
             if "llama server listening at" in output:
+                pbar.update(100-pbar.n)
+                pbar.close()
                 print("Model successfully loaded.")
                 break
-            print(output)
+            # print(output)
+        
+        hint = Waiting("AI is thinking ")
             
-        try:
-            process.wait()
-        except KeyboardInterrupt:
-            process.terminate()
-            process.wait()
-            print("Model service successfully stopped.")
-        except Exception as e:
-            log_error(e)
-            process.terminate()
-            process.wait()
+        while True:
+            try:
+                prompt = input(">>> ")
+                params = {
+                    "prompt": prompt,
+                }
+                params.update(cfg["options"])
+                
+                try:
+                    hint.start()
+                    res = send_post_request("http://127.0.0.1:8080/completion", params)
+                    hint.stop()
+                    print(res["content"])
+                except KeyboardInterrupt:
+                    # stop waiting for ai thinking
+                    hint.stop()
+            except KeyboardInterrupt:
+                print("Trying to stop model service...")
+                process.terminate()
+                process.wait()
+                print("Model service successfully stopped.")
+                break
+            except Exception as e:
+                log_error(e)
+                process.terminate()
+                process.wait()
+                break
             
         return
         
