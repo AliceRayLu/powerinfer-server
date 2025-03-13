@@ -20,7 +20,7 @@ class Waiting():
         for cursor in itertools.cycle("|/-\\"):
             sys.stdout.write('\r' + self.msg + cursor)
             sys.stdout.flush()
-            time.sleep(0.1)
+            time.sleep(0.2)
             if self.stopper.is_set():
                 break
         sys.stdout.write('\r')
@@ -31,6 +31,9 @@ class Waiting():
     def stop(self):
         self.stopper.set()
         self.spinner.join()
+        
+    def has_stopped(self):
+        return self.stopper.is_set()
 
 def print_table(data: list, header: list):
     '''print data in table format using tabulate'''

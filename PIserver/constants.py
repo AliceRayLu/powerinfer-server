@@ -3,6 +3,7 @@ from enum import Enum
 
 POWERINFER_HOST = "127.0.0.1"
 POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
+POWERINFER_LOCAL_MODEL_HOST = "http://127.0.0.1:8080/completion"
 POWERINFER_SERVER_PORT = 8000
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
@@ -58,9 +59,11 @@ DEFAULT_CONFIG = {
 }
 
 DEFAULT_SYSTEM_PROMPT = {
-    "prompt": "You are a helpful, kind, honest, good at writing assistant. Please help answer the following questions as best as you can.",
-    "anti_prompt": "User:",
-    "assistant_name": "Assistant:"
+    "system_prompt": {
+        "prompt": "You are a helpful, kind, honest, good at writing assistant. Please help answer the following questions as best as you can.",
+        "anti_prompt": "User:",
+        "assistant_name": "Assistant:"
+    }
 }
 
 class REMOVE_RESULT(Enum):

@@ -1,10 +1,10 @@
+from PIserver.clients.LLMClient import LLMClient,StopHandler
 from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
 from PIserver.utils.files import *
 import subprocess
 from tqdm import tqdm
-from PIserver.utils.net import send_post_request 
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -37,7 +37,7 @@ class Run_Model(Command):
             
         
         # format command
-        cmd = f"{engine} -m {mpath}"
+        cmd = f"{engine} -m {mpath} -np 4"
         for option in cfg:
             if self.filter_options(option):
                 cmd += f" --{option} {cfg[option] if type(cfg[option]) is not bool else ""}"
@@ -74,24 +74,46 @@ class Run_Model(Command):
                 break
             # print(output)
         
-        hint = Waiting("AI is thinking ")
+        # hint = Waiting("AI is thinking ")
             
         while True:
             try:
                 prompt = input(">>> ")
                 params = {
                     "prompt": prompt,
+                    "stream": True,
                 }
                 params.update(cfg["options"])
                 
-                try:
-                    hint.start()
-                    res = send_post_request("http://127.0.0.1:8080/completion", params)
-                    hint.stop()
-                    print(res["content"])
-                except KeyboardInterrupt:
+                stop_handler = StopHandler()
+                stop_handler.start()
+                
+                    # hint.start()
+                client = LLMClient(POWERINFER_LOCAL_MODEL_HOST)
+                for chunk in client.generate(params):
+                    if stop_handler.has_stoppend():
+                        client.close()
+                        break
+                    # if not hint.has_stopped():
+                    #     hint.stop()
+                    data = json.loads(chunk)
+                    if 'choices' in data and len(data['choices']) > 0:
+                        if 'delta' in data['choices'][0] and 'content' in data['choices'][0]['delta']:
+                            content = data['choices'][0]['delta']['content']
+                            print(content, end="", flush=True)
+                            
+                stop_handler.stop()
+
+            except json.JSONDecodeError:
+                log_error("Unable to decode json from server.")
+                break
+                          
+                # except KeyboardInterrupt:
                     # stop waiting for ai thinking
-                    hint.stop()
+                    # if not hint.has_stopped():
+                    #     hint.stop()
+                    # client.close()
+                    # print()
             except KeyboardInterrupt:
                 print("Trying to stop model service...")
                 process.terminate()

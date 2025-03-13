@@ -20,9 +20,9 @@ def send_get_request(
         log_error(f"Cannot successfully get response. {e}")
         return None
     
-def send_post_request(url: str, data):
+def send_post_request(url: str, data, stream: bool = False) -> Optional[requests.Response]:
     try:
-        response = requests.post(url, data=json.dumps(data)).json()
+        response = requests.post(url, data=json.dumps(data), stream=stream)
         return response
     except Exception as e:
         log_error(f"Cannot successfully get response. {e}")

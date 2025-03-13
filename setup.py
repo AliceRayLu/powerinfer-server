@@ -14,9 +14,11 @@ DEFAULT_ENGINE_LIST_FILE = DEFAULT_INSTALL_PATH / "list.json"
 
 LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']
 DEFAULT_SYSTEM_PROMPT = {
-    "prompt": "You are a helpful, kind, honest, good at writing assistant. Please help answer the following questions as best as you can.",
-    "anti_prompt": "User:",
-    "assistant_name": "Assistant:"
+    "system_prompt": {
+        "prompt": "You are a helpful, kind, honest, good at writing assistant. Please help answer the following questions as best as you can.",
+        "anti_prompt": "User:",
+        "assistant_name": "Assistant:"
+    }
 }
 
 def generate_ssh_key():
