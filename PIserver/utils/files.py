@@ -10,30 +10,7 @@ import threading
 import time
 
 # All the printings
-class Waiting():
-    def __init__(self, msg):
-        self.msg = msg
-        self.stopper = threading.Event()
-        self.spinner = threading.Thread(target=self.spinning)
-        
-    def spinning(self):
-        for cursor in itertools.cycle("|/-\\"):
-            sys.stdout.write('\r' + self.msg + cursor)
-            sys.stdout.flush()
-            time.sleep(0.2)
-            if self.stopper.is_set():
-                break
-        sys.stdout.write('\r')
-        
-    def start(self):
-        self.spinner.start()
-        
-    def stop(self):
-        self.stopper.set()
-        self.spinner.join()
-        
-    def has_stopped(self):
-        return self.stopper.is_set()
+
 
 def print_table(data: list, header: list):
     '''print data in table format using tabulate'''

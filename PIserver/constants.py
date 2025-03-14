@@ -8,7 +8,6 @@ POWERINFER_SERVER_PORT = 8000
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
 DEFAULT_CONFIG_FILE = Path.home() / ".powerinfer" / "config.json"
-DEFAULT_SYSTEM_PROMPT_FILE = Path.home() / ".powerinfer" / "system_prompt.json"
 DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
 DEFAULT_SSH_PUB_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa.pub"
 DEFAULT_MODEL_PATH = DEFAULT_STORAGE_PATH / "models"
@@ -55,15 +54,7 @@ DEFAULT_CONFIG = {
     },
     "ctx-size": 512,
     "gpu-layers": 32,
-    "system-prompt-file": str(DEFAULT_SYSTEM_PROMPT_FILE),
-}
-
-DEFAULT_SYSTEM_PROMPT = {
-    "system_prompt": {
-        "prompt": "You are a helpful, kind, honest, good at writing assistant. Please help answer the following questions as best as you can.",
-        "anti_prompt": "User:",
-        "assistant_name": "Assistant:"
-    }
+    "system-prompt": "Transcript of a never ending dialog, where the User interacts with an Assistant.\nThe Assistant is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.\nUser: Hi, Who are you?\n Assistant: I'm a helpful AI assistant. How can I help you today?\n",
 }
 
 class REMOVE_RESULT(Enum):

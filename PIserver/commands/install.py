@@ -1,5 +1,5 @@
 from PIserver.commands.command import Command
-from PIserver.powerinfer.install import *
+from PIserver.utils.install import *
 from PIserver.constants import DEFAULT_ENGINE_LIST_FILE
 from PIserver.utils.files import *
 

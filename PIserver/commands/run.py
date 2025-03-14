@@ -1,10 +1,11 @@
-from PIserver.clients.LLMClient import LLMClient,StopHandler
+from PIserver.clients.LLMClient import *
 from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
 from PIserver.utils.files import *
 import subprocess
 from tqdm import tqdm
+import time
 
 class Run_Model(Command):
     def register_subcommand(self, subparser):
@@ -17,6 +18,9 @@ class Run_Model(Command):
         cfg = self.check_config(args.config)
 
         # check backend engine
+        if 'engine' not in cfg:
+            log_error("Must specify the backend engine in the configuration file!")
+            return
         engine = self.check_engine(cfg['engine'])
         if engine is None:
             log_error(f"Unable to find {engine} in the installed list. Trying to install remote engine and find local files...")
@@ -47,6 +51,11 @@ class Run_Model(Command):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
+        time.sleep(1)
+        if process.poll() is not None:
+            _, err = process.communicate()
+            log_error(f"Unable to start the model service. {err}")
+            return
         print("Start to load model...")
         pbar = tqdm(total=100, desc="Loading model", unit="%")
         
@@ -74,50 +83,43 @@ class Run_Model(Command):
                 break
             # print(output)
         
-        # hint = Waiting("AI is thinking ")
-        print()
-        print("Pressing 'q' to stop inferencing.")
-        print()
         
+        print()
+        print("Pressing 'CTRL+C' to stop inferencing.")
+        print()
         stop_handler = StopHandler()
+        prompt_manager = PromptManager(cfg['system-prompt'] if 'system-prompt' in cfg else '')
             
         while True:
             try:
                 prompt = input(">>> ")
                 params = {
-                    "prompt": prompt,
+                    "prompt": prompt_manager.format_prompt(prompt),
                     "stream": True,
                 }
-                params.update(cfg["options"])
+                if 'options' in cfg:
+                    params.update(cfg["options"])
                 
                 stop_handler.start()
-                
-                    # hint.start()
                 client = LLMClient(POWERINFER_LOCAL_MODEL_HOST)
+                answer = ""
                 for chunk in client.generate(params):
                     if stop_handler.has_stoppend():
                         client.close()
                         break
-                    # if not hint.has_stopped():
-                    #     hint.stop()
                     data = json.loads(chunk)
                     if 'choices' in data and len(data['choices']) > 0:
                         if 'delta' in data['choices'][0] and 'content' in data['choices'][0]['delta']:
                             content = data['choices'][0]['delta']['content']
                             print(content, end="", flush=True)
+                            answer += content
                             
                 stop_handler.stop()
+                prompt_manager.save_dialog(prompt, answer)
 
             except json.JSONDecodeError:
                 log_error("Unable to decode json from server.")
                 break
-                          
-                # except KeyboardInterrupt:
-                    # stop waiting for ai thinking
-                    # if not hint.has_stopped():
-                    #     hint.stop()
-                    # client.close()
-                    # print()
             except KeyboardInterrupt:
                 print()
                 print("Trying to stop model service...")
@@ -150,6 +152,8 @@ class Run_Model(Command):
         else:
             cfg_file = Path(file)
             print(f"Running model using configuration file {file}...")
+        if not cfg_file.exists():
+            print(f"Configuration file {file} not found. Creating configuration file with default config options...")
         cfg = read_file(cfg_file)
         if len(cfg) == 0:
             cfg = DEFAULT_CONFIG
@@ -157,7 +161,7 @@ class Run_Model(Command):
         return cfg
     
     def filter_options(self, option: str):
-        anti = ["model_path", "engine", "options"]
+        anti = ["model_path", "engine", "options", "system-prompt"]
         for a in anti:
             if a == option:
                 return False

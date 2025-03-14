@@ -42,7 +42,7 @@ class LLMClient:
 
         return resData
     
-    def generate(self, data):
+    def generate(self, data, raw: bool=False):
         self.response = requests.post(self.host, json.dumps(data), stream=True)
         time_now = int(time.time())
         resData = self.make_resData_stream({}, chat=True, time_now=time_now, start=True)
@@ -50,6 +50,9 @@ class LLMClient:
         for line in self.response.iter_lines():
             if line:
                 decoded_line = line.decode('utf-8')
+                if raw:
+                    yield decoded_line
+                    continue
                 resData = self.make_resData_stream(json.loads(decoded_line[6:]), chat=True, time_now=time_now)
                 yield '{}\n'.format(json.dumps(resData))
                 
@@ -66,7 +69,7 @@ class StopHandler():
             keyboard.wait('ctrl+c',suppress=True)
             self.stopper.set()
             print()
-            print("Stopping signal sent. Stop inferencing.")
+            print("Stop signal sent. Stop inferencing.")
             print()
         except KeyboardInterrupt:
             print()
@@ -82,4 +85,28 @@ class StopHandler():
             self.thread.join()
         
     def has_stoppend(self):
-        return self.stopper.is_set()
+        return not self.thread.is_alive() or self.stopper.is_set()
+    
+class PromptManager():
+    def __init__(self, system_prompt):
+        self.chat = [
+            {
+                "user": "Hello, Assistant!",
+                "assistant": "Hello, how may I help you today?"
+            }
+        ]
+        self.instruction = system_prompt
+        
+    def format_prompt(self, question):
+        chat_history = ""
+        for msg in self.chat:
+            chat_history += f"User: {msg['user']}\nAssistant: {msg['assistant']}\n"
+        p = f"{self.instruction}{chat_history}User: {question}\nAssistant: "
+        print("sending prompt:", p)
+        return p
+                 
+    def save_dialog(self, question, answer):
+        self.chat.append({
+            "user": question,
+            "assistant": answer
+        })
