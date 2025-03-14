@@ -11,7 +11,7 @@ import keyboard
 class Run_Model(Command):
     def __init__(self):
         super().__init__()
-        self.stopper = False
+        self.state = LLMState.STOPPED
         
     def register_subcommand(self, subparser):
         run_parser = subparser.add_parser("run", help="Run a large language model.")
@@ -98,6 +98,7 @@ class Run_Model(Command):
         while True:
             try:
                 prompt = input(">>> ")
+                self.state = LLMState.RUNNING
                 params = {
                     "prompt": prompt_manager.format_prompt(prompt),
                     "stream": True,
@@ -108,7 +109,7 @@ class Run_Model(Command):
                 client = LLMClient(POWERINFER_LOCAL_MODEL_HOST)
                 answer = ""
                 for chunk in client.generate(params):
-                    if self.stopper:
+                    if self.state == LLMState.STOPPED:
                         break
                     data = json.loads(chunk)
                     if 'choices' in data and len(data['choices']) > 0:
@@ -119,7 +120,6 @@ class Run_Model(Command):
                 
                 print()            
                 prompt_manager.save_dialog(prompt, answer)
-                self.stopper = False
 
             except json.JSONDecodeError:
                 log_error("Unable to decode json from server.")
@@ -170,7 +170,8 @@ class Run_Model(Command):
         return True
     
     def set_stop(self):
-        print()
-        print("Stopping signal sent. Inference stopped.")
-        
-        self.stopper = True
+        if self.state == LLMState.RUNNING:
+            print()
+            print("Stopping signal sent. Inference stopped.")
+            
+            self.state = LLMState.STOPPED

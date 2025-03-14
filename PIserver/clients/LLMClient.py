@@ -58,12 +58,7 @@ class LLMClient:
     
 class PromptManager():
     def __init__(self, system_prompt):
-        self.chat = [
-            {
-                "user": "Hello, Assistant!",
-                "assistant": "Hello, how may I help you today?"
-            }
-        ]
+        self.chat = []
         self.instruction = system_prompt
         
     def format_prompt(self, question):

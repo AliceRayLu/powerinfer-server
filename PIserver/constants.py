@@ -61,3 +61,8 @@ class REMOVE_RESULT(Enum):
     SUCCESS = 0
     NOT_FOUND = 1
     ERROR = 2
+    
+class LLMState(Enum):
+    RUNNING = 0
+    STOPPED = 1
+    ERROR = 2
