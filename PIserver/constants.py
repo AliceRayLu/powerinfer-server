@@ -50,7 +50,7 @@ DEFAULT_CONFIG = {
         "top_p": 0.9,
         "min_p": 0.05,
         "temp": 0.7,
-        "stop": "User:"
+        "stop": ["\nUser: "]
     },
     "ctx-size": 512,
     "gpu-layers": 32,

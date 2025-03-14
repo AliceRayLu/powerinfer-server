@@ -1,9 +1,6 @@
-import getpass
 import time
 import json
 import requests
-import threading
-import keyboard
 
 class LLMClient:
     def __init__(self, host):
@@ -58,34 +55,6 @@ class LLMClient:
                 
     def close(self):
         self.response.close()
-
-class StopHandler():
-    def __init__(self):
-        self.stopper = threading.Event()
-        self.thread = threading.Thread(target=self.keyboard_listener)
-        
-    def keyboard_listener(self):
-        try:
-            keyboard.wait('ctrl+c',suppress=True)
-            self.stopper.set()
-            print()
-            print("Stop signal sent. Stop inferencing.")
-            print()
-        except KeyboardInterrupt:
-            print()
-            
-
-            
-    def start(self):
-        self.thread.start()
-
-    def stop(self):
-        if not self.stopper.is_set():
-            self.stopper.set()
-            self.thread.join()
-        
-    def has_stoppend(self):
-        return not self.thread.is_alive() or self.stopper.is_set()
     
 class PromptManager():
     def __init__(self, system_prompt):
@@ -101,9 +70,7 @@ class PromptManager():
         chat_history = ""
         for msg in self.chat:
             chat_history += f"User: {msg['user']}\nAssistant: {msg['assistant']}\n"
-        p = f"{self.instruction}{chat_history}User: {question}\nAssistant: "
-        print("sending prompt:", p)
-        return p
+        return f"{self.instruction}{chat_history}User: {question}\nAssistant: "
                  
     def save_dialog(self, question, answer):
         self.chat.append({

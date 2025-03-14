@@ -6,8 +6,13 @@ from PIserver.utils.files import *
 import subprocess
 from tqdm import tqdm
 import time
+import keyboard
 
 class Run_Model(Command):
+    def __init__(self):
+        super().__init__()
+        self.stopper = False
+        
     def register_subcommand(self, subparser):
         run_parser = subparser.add_parser("run", help="Run a large language model.")
         run_parser.add_argument("model", help="The model name or local path to run.")
@@ -85,10 +90,10 @@ class Run_Model(Command):
         
         
         print()
-        print("Pressing 'CTRL+C' to stop inferencing.")
+        print("Pressing 'CTRL+D' to stop inferencing.")
         print()
-        stop_handler = StopHandler()
         prompt_manager = PromptManager(cfg['system-prompt'] if 'system-prompt' in cfg else '')
+        keyboard.add_hotkey("ctrl+d", self.set_stop, suppress=True)
             
         while True:
             try:
@@ -100,12 +105,10 @@ class Run_Model(Command):
                 if 'options' in cfg:
                     params.update(cfg["options"])
                 
-                stop_handler.start()
                 client = LLMClient(POWERINFER_LOCAL_MODEL_HOST)
                 answer = ""
                 for chunk in client.generate(params):
-                    if stop_handler.has_stoppend():
-                        client.close()
+                    if self.stopper:
                         break
                     data = json.loads(chunk)
                     if 'choices' in data and len(data['choices']) > 0:
@@ -113,9 +116,10 @@ class Run_Model(Command):
                             content = data['choices'][0]['delta']['content']
                             print(content, end="", flush=True)
                             answer += content
-                            
-                stop_handler.stop()
+                
+                print()            
                 prompt_manager.save_dialog(prompt, answer)
+                self.stopper = False
 
             except json.JSONDecodeError:
                 log_error("Unable to decode json from server.")
@@ -126,13 +130,11 @@ class Run_Model(Command):
                 process.terminate()
                 process.wait()
                 print("Model service successfully stopped.")
-                stop_handler.stop()
                 break
             except Exception as e:
                 log_error(e)
                 process.terminate()
                 process.wait()
-                stop_handler.stop()
                 break
             
         return
@@ -166,3 +168,9 @@ class Run_Model(Command):
             if a == option:
                 return False
         return True
+    
+    def set_stop(self):
+        print()
+        print("Stopping signal sent. Inference stopped.")
+        
+        self.stopper = True
