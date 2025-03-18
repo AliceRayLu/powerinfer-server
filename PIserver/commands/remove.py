@@ -3,17 +3,13 @@ from PIserver.utils.files import *
 
 class Remove_Models(Command):
     def register_subcommand(self, subparser):
-        rm_parser = subparser.add_parser("remove", help="Remove selected local or remote model.(By default local) Remove the backend engine package.")
-        rm_parser.add_argument("model", nargs='?', help="The model name to remove. If not set, remove all the models.")
-        rm_parser.add_argument("-r","--remote", default=None, help="Remove the remote model.", action="store_true")
+        rm_parser = subparser.add_parser("remove", help="Remove selected local model or local engine.")
+        rm_parser.add_argument("model", nargs='?', help="The model name or engine name to remove.")
         rm_parser.add_argument("-i","--install", default=None, help="Remove the selected backend engine package.", action="store_true")
         
     def execute(self, args):
         model = str(args.model)
         if args.install is not None:
-            if args.remote is not None:
-                log_error("Cannot use -i and -r together. Please use it seperately to remove backend engine and models.")
-                return
             if model is None:
                 log_error("Please specify the engine name to remove.")
                 return
@@ -32,8 +28,6 @@ class Remove_Models(Command):
             del engines[model]
             write_file(DEFAULT_ENGINE_LIST_FILE, engines)
             
-        if args.remote:
-            print("Remove remote model:", model)
         else:
             rows, rest = filter_rows(lambda x: True if model is None else parse_condition(model))
             if model is None and len(rows) > 0:
@@ -46,6 +40,9 @@ class Remove_Models(Command):
                     log_error(f"Unable to find model: {model} locally. Please check your models using `pwi list`.")
                     return
                 elif len(rows) > 1:
+                    print("Found models:")
+                    print_table(rows, LOCAL_LIST_HEADER)
+                    print()
                     response = input(f"Found multiple models with name {model}. Do you want to remove all of them? (y/n)")
                     if response != 'y':
                         return

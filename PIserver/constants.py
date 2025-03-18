@@ -4,7 +4,7 @@ from enum import Enum
 POWERINFER_HOST = "127.0.0.1"
 POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
 POWERINFER_LOCAL_MODEL_HOST = "http://127.0.0.1:8080/completion"
-POWERINFER_SERVER_PORT = 8000
+POWERINFER_SERVER_PORT = 8088
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
 DEFAULT_CONFIG_FILE = Path.home() / ".powerinfer" / "config.json"
@@ -19,6 +19,8 @@ TEST_SSH_PATH = Path.home() / ".ssh" / "id_rsa"
 LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']
 REMOTE_LIST_HEADER = ['MODEL_NAME', 'ARCH', 'DOWNLOADS', 'LAST_UPDATED']
 REMOTE_MODEL_TYPE_HEADER = ['SIZE', 'BSIZE', 'VERSION']
+
+CHUNK_SIZE = 1024 * 1024 * 10  # 10MB per chunk
 
 # Engine Choices
 WINDOWS_ENGINE_CHOICES = {
