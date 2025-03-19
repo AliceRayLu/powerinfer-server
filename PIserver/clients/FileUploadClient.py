@@ -1,9 +1,9 @@
-from PIserver.constants import POWERINFER_MODEL_HOST, CHUNK_SIZE, POWERINFER_SERVER_PORT
+from PIserver.constants import *
 from pathlib import Path
 import requests
 from tqdm import tqdm
 
-class FileTransClient():
+class FileUploadClient():
     def __init__(self):
         self.host = POWERINFER_MODEL_HOST
         self.port = POWERINFER_SERVER_PORT
@@ -12,10 +12,8 @@ class FileTransClient():
         file_size = path.stat().st_size
         uploaded_size = 0
         
-        url = "http://"+self.host+":"+str(self.port)+'/type/upload'
-        
         # 检查已上传的字节数（用于断点续传）
-        response = requests.head(url, params={"name": path.name})
+        response = requests.head(backend_host+"/type/upload", params={"name": path.name})
         if 'Content-Range' in response.headers:
             uploaded_size = int(response.headers['Content-Range'].split('/')[1])
         
@@ -35,7 +33,7 @@ class FileTransClient():
                     }
                     
                     # 发送PATCH请求上传文件块
-                    response = requests.patch(url, headers=headers, params={"name": path.name}, data=chunk)
+                    response = requests.patch(backend_host+"/type/upload", headers=headers, params={"name": path.name}, data=chunk)
                     
                     if response.status_code == 200 or response.status_code == 206:
                         # 更新已上传大小

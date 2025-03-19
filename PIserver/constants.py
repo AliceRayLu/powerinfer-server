@@ -5,6 +5,7 @@ POWERINFER_HOST = "127.0.0.1"
 POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
 POWERINFER_LOCAL_MODEL_HOST = "http://127.0.0.1:8080/completion"
 POWERINFER_SERVER_PORT = 8088
+backend_host = "http://" + POWERINFER_HOST + ":" + str(POWERINFER_SERVER_PORT)
 
 DEFAULT_STORAGE_PATH = Path.home() / ".powerinfer"
 DEFAULT_CONFIG_FILE = Path.home() / ".powerinfer" / "config.json"

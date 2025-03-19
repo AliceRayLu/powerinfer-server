@@ -30,6 +30,7 @@ class Remove_Models(Command):
             
         else:
             rows, rest = filter_rows(lambda x: True if model is None else parse_condition(model))
+            print(rows)
             if model is None and len(rows) > 0:
                 response = input(f"Are you sure you want to remove all the local models? (y/n)")
                 if response != "y":
@@ -49,7 +50,7 @@ class Remove_Models(Command):
             
             for row in rows:
                 res = remove_dir(row[4])
-                if res != REMOVE_RESULT.SUCCESS:
+                if res == REMOVE_RESULT.ERROR:
                     log_error(f"Unable to remove model {row[0]}:{row[1]}.")
                     return
                 write_rows(rest)

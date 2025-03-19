@@ -95,13 +95,13 @@ def parse_model(name):
 def check_model_name_with_size(name):
     if ':' not in name:
         log_error("Please specify the model size. Format the model name like 'USR/NAME:SIZE'.")
-        return False
-    return True
+        return name, ""
+    return parse_model(name)
 
 def get_uname_from_model(mname):
     if '/' not in mname:
-        return ""
-    return mname.split('/')[0]
+        return mname, ""
+    return mname.split('/')[1], mname.split('/')[0]
 
 def parse_condition(model):
     name, size = parse_model(model)

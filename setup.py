@@ -35,7 +35,7 @@ class PostInstallCommand(install):
         
         DEFAULT_STORAGE_PATH.mkdir(0o755, parents=True, exist_ok=True)
         DEFAULT_MODEL_PATH.mkdir(0o755, parents=True, exist_ok=True)
-        generate_ssh_key()
+        # generate_ssh_key() # FIXME: add ssh-key in production; in test don't change
         generate_model_list_file()
         DEFAULT_CONFIG_PATH.touch(0o755, exist_ok=True)
         DEFAULT_INSTALL_PATH.mkdir(0o755, parents=True, exist_ok=True)
