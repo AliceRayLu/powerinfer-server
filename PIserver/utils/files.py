@@ -121,6 +121,13 @@ def read_file(path: Path) -> dict:
         path.touch(0o755, exist_ok=True)
         return {}
     
-def write_file(path: Path, data: dict) -> None:
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=4)
+def write_file(path: Path | str, data: dict) -> bool:
+    path = Path(path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=4)
+            return True
+    except Exception as e:
+        log_error(f"Unable to write to file {path}: {e}")
+        return False

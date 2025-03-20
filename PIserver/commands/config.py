@@ -5,10 +5,12 @@ from PIserver.utils.files import read_file, write_file, log_error
 class Config(Command):
     def register_subcommand(self, subparser):
         cfg_parser = subparser.add_parser("config", help="Manage the store location of models.")
-        cfg_parser.add_argument("-l","--list", default=None, help="Show current configurations", action="store_true")
-        cfg_parser.add_argument("-r","--reset", default=None, help="Change the config back into default values.", action="store_true")
-        cfg_parser.add_argument("-s","--set", default=None, help="Set the config in the format option=value.")
-        cfg_parser.add_argument("-rmv", "--remove", default=None, help="Remove a config option.")
+        group = cfg_parser.add_mutually_exclusive_group()
+        group.add_argument("-l","--list", default=None, help="Show current configurations", action="store_true")
+        group.add_argument("-r","--reset", default=None, help="Change the config back into default values.", action="store_true")
+        group.add_argument("-s","--set", default=None, help="Set the config in the format option=value.")
+        group.add_argument("-rmv", "--remove", default=None, help="Remove a config option.")
+        group.add_argument("-cp", "--copy", default=None, help="Copy a config file into a new location.")
     
     def execute(self, args):
         if args.list is not None:
@@ -35,3 +37,11 @@ class Config(Command):
             if option in config:
                 del config[option]
                 print(f"Option {option} successfully removed.")
+            else:
+                log_error(f"Option {option} not found.")
+        elif args.copy is not None:
+            config = read_file(DEFAULT_CONFIG_FILE)
+            new_path = str(args.copy)
+            success = write_file(new_path, config)
+            if success:
+                print(f"Config file copied to {new_path}.")
