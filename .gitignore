@@ -2,3 +2,7 @@ build/
 powerinfer_server.egg-info/
 PIserver/__pycache__/
 .vscode/
+# Python
+*.pyc
+__pycache__/
+.pytest_cache/
