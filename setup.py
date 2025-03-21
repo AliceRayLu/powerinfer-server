@@ -40,6 +40,8 @@ class PostInstallCommand(install):
         DEFAULT_CONFIG_PATH.touch(0o755, exist_ok=True)
         DEFAULT_INSTALL_PATH.mkdir(0o755, parents=True, exist_ok=True)
         DEFAULT_ENGINE_LIST_FILE.touch(0o755, exist_ok=True)
+        
+        # TODO: automatically install engine (checking sys and backend)
 
 
 setup(

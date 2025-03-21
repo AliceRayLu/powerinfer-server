@@ -32,6 +32,9 @@ def check_list_file():
 def get_absolute_path(path):
     return Path(path).resolve()
 
+def get_folder_size(path: Path):
+    return sum(f.stat().st_size if f.is_file() else get_folder_size(f) for f in path.glob('**/*'))
+
 def remove_dir(path):
     path = Path(path)
     if not path.exists():

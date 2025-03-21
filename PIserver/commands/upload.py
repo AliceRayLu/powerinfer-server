@@ -8,10 +8,10 @@ class Upload_Model(Command):
         upload_parser = subparser.add_parser("upload", help="Upload a local model to https://powerinfer.com. and get predictors.")
         upload_parser.add_argument("model", help="The remote model repository to upload.")
         upload_parser.add_argument("-d","--local-dir", default=None, help="The local model directory to upload.")
-        upload_parser.add_argument("--hf", default=None, help="Upload the model to huggingface hub.")
+        upload_parser.add_argument("-hf", "--huggingface", default=None, help="Upload the model from huggingface hub.")
 
     def execute(self, args):
-        if args.local_dir is None and args.hf is None:
+        if args.local_dir is None and args.huggingface is None:
             log_error("Please specify the local directory or huggingface model name.")
             return
         try:

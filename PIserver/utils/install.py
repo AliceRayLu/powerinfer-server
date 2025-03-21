@@ -33,7 +33,7 @@ def choosing(stdscr):
     curses.cbreak()
     stdscr.keypad(True)
     
-    selected = set()
+    selected = set() # TODO: load selected from engine list and choice
     current_row = 0
     while True:
         display(stdscr, choice_names, selected, current_row)
