@@ -1,3 +1,4 @@
+from PIserver.clients.FileDownloadClient import FileDownloadClient
 from PIserver.clients.LLMClient import *
 from PIserver.commands.command import Command
 from PIserver.constants import *
@@ -42,8 +43,33 @@ class Run_Model(Command):
             mpath = row[4] if check_existence(row[4]) else None
         if mpath is None:
             print(f"Unable to find model {mname} locally. Trying to download it from remote...")
-            # TODO: download model from remote
+            # download model from remote
+            client = FileDownloadClient()
+            local_dir_name = str(args.model).replace(":", "-").replace("/", "-")
+            local_path = Path(read_file(DEFAULT_CONFIG_FILE)["model_path"]) / Path(local_dir_name)
+            local_path.mkdir(parents=True, exist_ok=True)
+            mname, tname = check_model_name_with_size(args.model)
+            mname, uname = get_uname_from_model(mname)
+            if tname == "":
+                log_error("Please specify the model size. Format the model name like 'USR/NAME:SIZE'.")
+                return
+            getModelRequest = {
+                "mname": mname,
+                "tname": tname
+            }
+            if uname!= "":
+                getModelRequest["uname"] = uname
             
+            try:
+                info = client.getModelInfo(getModelRequest)
+                if info is None:
+                    return 
+                if client.download(local_path, info["dir"]):
+                    add_row([mname, tname, info["size"], info["version"], str(Path(read_file(DEFAULT_CONFIG_FILE)["model_path"]) / Path(mname))])
+                    mpath = str(local_path)
+            except KeyboardInterrupt:
+                print("Download stopped.")
+                return
         
         # format command
         cmd = f"{engine} -m {mpath} -np 4"

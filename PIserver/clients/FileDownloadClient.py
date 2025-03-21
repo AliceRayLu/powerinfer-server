@@ -1,6 +1,5 @@
 from tqdm import tqdm
 import os
-from requests import Response
 from pathlib import Path
 from PIserver.clients.net import send_post_request
 from PIserver.utils.files import log_error
@@ -43,7 +42,7 @@ class FileDownloadClient:
 
         content_range = response.headers.get("Content-Range", "")
         if content_range:
-            total_size = int(content_range.split("/")[-1])  # 获取"/"后的完整文件大小
+            total_size = int(content_range.split("/")[-1])
         else:
             total_size = int(response.headers.get("Content-Length", 0)) + downloaded_size
 
@@ -53,7 +52,7 @@ class FileDownloadClient:
             unit='B', 
             unit_scale=True, 
             desc=os.path.basename(local_path),
-            initial=downloaded_size  # 设置进度条初始值
+            initial=downloaded_size
         ) as pbar:
             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 file.write(chunk)

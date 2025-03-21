@@ -18,10 +18,12 @@ class Clone_Model(Command):
         mname, tname = check_model_name_with_size(mname)
         
         # parse local path to store
-        local_path = Path(args.local_dir) if args.local_dir is not None else Path(DEFAULT_MODEL_PATH) / Path(mname)
+        local_dir_name = str(args.model).replace(":", "-").replace("/", "-")
+        local_path = Path(args.local_dir) if args.local_dir is not None else Path(DEFAULT_MODEL_PATH) / Path(local_dir_name)
         if args.local_dir is None:
             config = read_file(DEFAULT_CONFIG_FILE)
-            local_path = Path(config["model_path"]) / Path(mname)
+            local_path = Path(config["model_path"]) / Path(local_dir_name)
+        local_path.mkdir(parents=True, exist_ok=True)
             
         if args.hf is not None:
             print("Cloning from huggingface...")
