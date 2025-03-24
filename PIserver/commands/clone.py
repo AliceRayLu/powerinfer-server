@@ -3,7 +3,7 @@ from PIserver.commands.command import Command
 from PIserver.utils.files import *
 from PIserver.constants import *
 from pathlib import Path
-from huggingface_hub import snapshot_download, list_repo_files, HfApi
+from huggingface_hub import snapshot_download, HfApi
 from tqdm import tqdm
 
 class Clone_Model(Command):

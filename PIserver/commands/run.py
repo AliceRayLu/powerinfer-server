@@ -16,7 +16,7 @@ class Run_Model(Command):
         
     def register_subcommand(self, subparser):
         run_parser = subparser.add_parser("run", help="Run a large language model.")
-        run_parser.add_argument("model", help="The model name or local path to run.")
+        run_parser.add_argument("model", help="The exact model file like model_name/model_file.gguf or model_dir/model_file.gguf Use `powerinfer list ")
         run_parser.add_argument("-cfg","--config", default=None, help="The configuration file to use.")
         
     def execute(self, args):
@@ -36,11 +36,12 @@ class Run_Model(Command):
         # check model existence
         mname = str(args.model)
         row, rest = filter_rows(parse_condition(mname))
-        mpath = ""
+        mpath = None
         if len(row) == 0:
             mpath = mname if check_existence(mname) else None
         else:
-            mpath = row[4] if check_existence(row[4]) else None
+            model_info = row[0]
+            mpath = model_info[4] if check_existence(model_info[4]) else None
         if mpath is None:
             print(f"Unable to find model {mname} locally. Trying to download it from remote...")
             # download model from remote
@@ -65,17 +66,30 @@ class Run_Model(Command):
                 if info is None:
                     return 
                 if client.download(local_path, info["dir"]):
-                    add_row([mname, tname, info["size"], info["version"], str(Path(read_file(DEFAULT_CONFIG_FILE)["model_path"]) / Path(mname))])
+                    add_row([mname, tname, info["size"], info["version"], str(local_path)])
                     mpath = str(local_path)
             except KeyboardInterrupt:
                 print("Download stopped.")
                 return
+            
+        # find gguf model weight, if multiple, use first one found
+        mpath = Path(mpath)
+        if mpath.is_dir():
+            model_files = list(mpath.glob("*.gguf"))
+            if len(model_files) == 0:
+                log_error(f"Unable to find model weight file in {mpath}. Please check the model directory.")
+                return
+            elif len(model_files) > 1:
+                print(f"Multiple model weight files detected. Using `powerinfer run local_model_path` to specify what you need. Currently using {str(model_files[0])}.")
+            mpath = model_files[0]
         
         # format command
-        cmd = f"{engine} -m {mpath} -np 4"
+        cmd = f"{engine} -m {str(mpath)} -np 4"
         for option in cfg:
             if self.filter_options(option):
                 cmd += f" --{option} {cfg[option] if type(cfg[option]) is not bool else ""}"
+                
+        print(f"Running model with command: {cmd}")
         
         process = subprocess.Popen(
             cmd,
@@ -84,8 +98,8 @@ class Run_Model(Command):
         )
         time.sleep(1)
         if process.poll() is not None:
-            _, err = process.communicate()
-            log_error(f"Unable to start the model service. {err}")
+            out, err = process.communicate()
+            log_error(f"Unable to start the model service. {out} {err}")
             return
         print("Start to load model...")
         pbar = tqdm(total=100, desc="Loading model", unit="%")

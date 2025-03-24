@@ -34,36 +34,44 @@ class FileDownloadClient:
         else:
             downloaded_size = 0
 
-        response = send_post_request("/type/download",params={"path": remote_path}, header=headers, stream=True)
-        if response is None:
-            log_error("Cannot get response from server. Please check your internet connection.")
-            return
-        response.raise_for_status()
+        try:
+            response = send_post_request("/type/download",params={"path": remote_path}, header=headers, stream=True)
+            if response is None:
+                log_error("Cannot get response from server. Please check your internet connection.")
+                return False
+            if response.status_code == 404:
+                log_error(f"File not found: {remote_path}")
+                return False
+            response.raise_for_status()
 
-        content_range = response.headers.get("Content-Range", "")
-        if content_range:
-            total_size = int(content_range.split("/")[-1])
-        else:
-            total_size = int(response.headers.get("Content-Length", 0)) + downloaded_size
+            content_range = response.headers.get("Content-Range", "")
+            if content_range:
+                total_size = int(content_range.split("/")[-1])
+            else:
+                total_size = int(response.headers.get("Content-Length", 0)) + downloaded_size
 
-        mode = "ab" if downloaded_size > 0 else "wb"
-        with open(local_path, mode) as file, tqdm(
-            total=total_size, 
-            unit='B', 
-            unit_scale=True, 
-            desc=os.path.basename(local_path),
-            initial=downloaded_size
-        ) as pbar:
-            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-                file.write(chunk)
-                pbar.update(len(chunk))
-        
-            
+            mode = "ab" if downloaded_size > 0 else "wb"
+            with open(local_path, mode) as file, tqdm(
+                total=total_size, 
+                unit='B', 
+                unit_scale=True, 
+                desc=os.path.basename(local_path),
+                initial=downloaded_size
+            ) as pbar:
+                for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                    file.write(chunk)
+                    pbar.update(len(chunk))
+            return True
+        except Exception as e:
+            log_error(f"Failed to download file {remote_path}: {e}")
+            return False
+
     def iter_folder(self, local_path: Path, files: dict):
         for name, fpath in files.items():
             if isinstance(fpath, str):
                 file_path = local_path / Path(name)
-                self.download_file(file_path, fpath)
+                if not self.download_file(file_path, fpath):
+                    continue  # Skip to next file if download fails
             else:
                 subfolder_path = local_path / Path(name)
                 subfolder_path.mkdir(parents=True, exist_ok=True)
@@ -75,7 +83,7 @@ class FileDownloadClient:
             if not folder_structure:
                 return
             files = dict(folder_structure.json())
-            # print(files)
+            # print("parsing files=======>",files) 
             local_path.mkdir(parents=True, exist_ok=True)
 
             self.iter_folder(local_path, files)
