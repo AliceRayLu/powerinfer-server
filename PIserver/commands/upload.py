@@ -15,9 +15,14 @@ class Upload_Model(Command):
             log_error("Please specify the local directory or huggingface model name.")
             return
         try:
+            if ":" not in str(args.model):
+                log_error("Invalid model name. Please specify the size in the format NAME:SIZE .")
+                return
             print("Uploading model... Press Ctrl+C to stop.")
             client = FileUploadClient()
-            client.upload(args.local_dir)
+            client.upload(args.local_dir, str(args.model).split(":"))
+            
+            
         except KeyboardInterrupt:
             print("Upload stopped.")
             return

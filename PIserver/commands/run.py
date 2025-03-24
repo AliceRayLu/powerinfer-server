@@ -65,7 +65,7 @@ class Run_Model(Command):
                 info = client.getModelInfo(getModelRequest)
                 if info is None:
                     return 
-                if client.download(local_path, info["dir"]):
+                if client.download(local_path, info["dir_info"]):
                     add_row([mname, tname, info["size"], info["version"], str(local_path)])
                     mpath = str(local_path)
             except KeyboardInterrupt:

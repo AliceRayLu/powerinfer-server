@@ -1,55 +1,60 @@
+from PIserver.clients.net import getHeader
 from PIserver.constants import *
 from pathlib import Path
 import requests
 from tqdm import tqdm
+
+from PIserver.utils.files import log_error
 
 class FileUploadClient():
     def __init__(self):
         self.host = POWERINFER_MODEL_HOST
         self.port = POWERINFER_SERVER_PORT
 
-    def upload_file(self, path: Path):
+    def upload_file(self, path: Path, model_name: list):
         file_size = path.stat().st_size
         uploaded_size = 0
-        
-        # 检查已上传的字节数（用于断点续传）
-        response = requests.head(backend_host+"/type/upload", params={"name": path.name})
+        auth_header = getHeader()
+        response = requests.head(
+            backend_host+"/type/client/upload", 
+            params={"mname": model_name[0], "tname": model_name[1], "fname": path.name}, 
+            headers=auth_header
+        )
         if 'Content-Range' in response.headers:
             uploaded_size = int(response.headers['Content-Range'].split('/')[1])
         
-        # 使用tqdm创建进度条
         with tqdm(total=file_size, unit='B', unit_scale=True, desc=path.name, initial=uploaded_size) as pbar:
             with open(path, 'rb') as f:
-                f.seek(uploaded_size)  # 跳转到已上传的位置
+                f.seek(uploaded_size)
                 while uploaded_size < file_size:
-                    # 读取文件块
                     chunk = f.read(CHUNK_SIZE)
                     if not chunk:
                         break
                     
-                    # 设置Content-Range头
                     headers = {
                         'Content-Range': f'bytes {uploaded_size}-{uploaded_size + len(chunk) - 1}/{file_size}'
                     }
-                    
-                    # 发送PATCH请求上传文件块
-                    response = requests.patch(backend_host+"/type/upload", headers=headers, params={"name": path.name}, data=chunk)
+                    headers.update(auth_header)
+                    response = requests.patch(
+                        backend_host+"/type/client/upload", 
+                        headers=headers, 
+                        params={"mname": model_name[0], "tname": model_name[1], "fname": path.name}, 
+                        data=chunk
+                    )
                     
                     if response.status_code == 200 or response.status_code == 206:
-                        # 更新已上传大小
                         uploaded_size += len(chunk)
-                        # 更新进度条
                         pbar.update(len(chunk))
                     else:
-                        print(f"上传失败: {response.text}")
+                        log_error(f"Failed to Upload. {response.text}")
                         break
                     
-    def upload(self, file_path):
+    def upload(self, file_path, model_name:list):
         path = Path(file_path)
         
         if path.is_file():
-            self.upload_file(path)
+            self.upload_file(path, model_name)
         elif path.is_dir():
             for file in path.iterdir():
                 if file.is_file():
-                    self.upload_file(file)
+                    self.upload_file(file, model_name)

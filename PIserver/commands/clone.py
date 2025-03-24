@@ -64,12 +64,14 @@ class Clone_Model(Command):
             info = client.getModelInfo(getModelRequest)
             if info is None:
                 return
-            remote_path = info["dir"]
+            structure = info["dir_info"]
+            print("Model info: ", info)
+            print("structure: ", structure)
             need_download = self.check_model(args.model, info["version"])
             if not need_download:
                 return
             # download & add to local model list    
-            if client.download(local_path, remote_path):
+            if client.download(local_path, structure):
                 add_row([mname, tname, info["size"], info["version"], str(local_path)])
         except KeyboardInterrupt:
             print("Download stopped.")

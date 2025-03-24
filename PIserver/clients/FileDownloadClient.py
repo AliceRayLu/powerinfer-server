@@ -1,3 +1,4 @@
+import json
 from tqdm import tqdm
 import os
 from pathlib import Path
@@ -77,12 +78,9 @@ class FileDownloadClient:
                 subfolder_path.mkdir(parents=True, exist_ok=True)
                 self.iter_folder(subfolder_path, fpath)
             
-    def download(self, local_path: Path, remote_path):
+    def download(self, local_path: Path, structure: str):
         try:
-            folder_structure = send_post_request("/type/folder", params={"path": remote_path})
-            if not folder_structure:
-                return
-            files = dict(folder_structure.json())
+            files = dict(json.loads(structure))
             # print("parsing files=======>",files) 
             local_path.mkdir(parents=True, exist_ok=True)
 
