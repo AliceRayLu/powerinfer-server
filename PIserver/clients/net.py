@@ -62,7 +62,7 @@ def send_post_request(url: str, data=None, stream: bool = False, header: dict=No
         log_error(f"Cannot successfully get response. {e}")
         return None
     
-def get_user_by_pub_key(pub_key: str) -> str:
-    # uid = send_get_request("/key/getUser", {"pub_key": pub_key})
-    # print(uid)
-    return ""
+# def get_user_by_pub_key(pub_key: str) -> str:
+#     # uid = send_get_request("/key/getUser", {"pub_key": pub_key})
+#     # print(uid)
+#     return ""
