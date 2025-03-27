@@ -9,9 +9,11 @@ from tqdm import tqdm
 from PIserver.utils.files import log_error
 
 class FileUploadClient():
-    def __init__(self):
+    def __init__(self, model_name: list):
         self.host = POWERINFER_MODEL_HOST
         self.port = POWERINFER_SERVER_PORT
+        self.mname = model_name[0]
+        self.tname = model_name[1]
         
     def generate_md5(self, file_path):
         md5_hash = hashlib.md5()
@@ -21,7 +23,7 @@ class FileUploadClient():
         return md5_hash.hexdigest()
 
 
-    def upload_file(self, path: Path, model_name: list) -> bool:
+    def upload_file(self, path: Path) -> bool:
         file_size = path.stat().st_size
         uploaded_size = 0
         auth_header = getHeader()
@@ -29,8 +31,8 @@ class FileUploadClient():
             backend_host+"/task/client/upload",  
             headers=auth_header,
             data=json.dumps({
-                "mname": model_name[0], 
-                "tname": model_name[1], 
+                "mname": self.mname, 
+                "tname": self.tname, 
                 "fname": path.name, 
                 "md5": self.generate_md5(path)
             })
@@ -60,7 +62,7 @@ class FileUploadClient():
                     response = requests.patch(
                         backend_host+"/task/client/upload", 
                         headers=headers, 
-                        params={"mname": model_name[0], "tname": model_name[1], "fname": path.name}, 
+                        params={"mname": self.mname, "tname": self.tname, "fname": path.name}, 
                         data=chunk
                     )
                     
@@ -71,16 +73,46 @@ class FileUploadClient():
                         log_error(f"Failed to Upload. {response.text}")
                         break
         return True
-                    
-    def upload(self, file_path, model_name:list):
-        path = Path(file_path)
-        
+    
+    def iter_folder(self, path: Path):
         if path.is_file():
-            if not self.upload_file(path, model_name):
-                return
+            self.upload_file(path)
         elif path.is_dir():
             for file in path.iterdir():
                 if file.is_file():
-                    if not self.upload_file(file, model_name):
-                        return
-        send_post_request("/task/client/add", params={"mname": model_name[0], "tname": model_name[1]})
+                    self.upload_file(file)
+                # forbid any sub directory
+                    
+    def upload(self, file_path):
+        response = send_post_request("/task/client/add", params={"mname": self.mname, "tname": self.tname})
+        
+        if response.status_code == 403:
+            log_error(response.text)
+            return
+        self.iter_folder(Path(file_path))
+        
+        send_post_request("/task/client/done", params={"mname": self.mname, "tname": self.tname})
+                    
+        print(f"Upload successfully. Visit xxx.com or use \
+            `powerinfer upload {self.mname+":"+self.tname} -s` to check the process.")
+    
+    def fetch_history(self):
+        response = send_post_request("/task/client/query", params={"mname": self.mname, "tname": self.tname}, stream=True)
+        if response.status_code == 200:
+            try:
+                for line in response.iter_lines():
+                    if line:
+                        task = json.loads(line)
+                        yield task
+            except Exception as e:
+                log_error(f"Failed to parse task stream: {e}")
+                yield None
+        
+    def cancel(self):
+        print("Starting to cancel training task for model", self.mname + ":" + self.tname)
+        response = send_post_request("/task/client/cancel", params={"mname": self.mname, "tname": self.tname})
+        if response.text == "true":
+            print("Cancelled successfully.")
+        else:
+            print("Training task not found.")
+        

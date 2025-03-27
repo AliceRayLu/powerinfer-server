@@ -5,9 +5,6 @@ import shutil
 from pathlib import Path
 import sys
 import json
-import itertools
-import threading
-import time
 
 # All the printings
 

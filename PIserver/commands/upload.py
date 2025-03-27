@@ -15,23 +15,34 @@ class Upload_Model(Command):
 
     def execute(self, args):
         if args.status is not None:
-            response = send_post_request("/type/client/query", params={"name": args.model})
-            print(response.json())
+            response = send_post_request("/task/client/detail", params={
+                "mname": str(args.model).split(":")[0],
+                "tname": str(args.model).split(":")[1]
+            })
+            if response.status_code == 404:
+                log_error(f"Model {args.model} not found.")
+                return
+            task = dict(response.json())
+            # {'tid': 'e8ec8383da200308f2f83fbfdf57589a', 'dir': 'D://train/73027646d141476489fd6dae05bdb217/testLlama-7b', 'version': 'd83d625b0d7683711c00bbd035eed394ea141609', 'id': 'c0ecd6558ad2e0838663e8b7b2c9bf9e', 'state': 'UPLOADING', 'created': '2025-03-27T20:56:30.123858', 'started': None, 'finished': None, 'queue': 0, 'progress': 0, 'waitingTime': 0, 'runningTime': 0}
+            print(task) # TODO:
             return
-        if args.local_dir is None and args.huggingface is None:
-            log_error("Please specify the local directory or huggingface model name.")
-            return
+        
+        client = FileUploadClient(str(args.model).split(":"))
+        if args.cancel is not None:
+            client.cancel()
+            return 
         
         try:
             if ":" not in str(args.model):
                 log_error("Invalid model name. Please specify the size in the format NAME:SIZE .")
                 return
             print("Uploading model... Press Ctrl+C to cancel task.")
-            client = FileUploadClient()
-            client.upload(args.local_dir, str(args.model).split(":"))
-            print(f"Upload successfully. Visit xxx.com or use `powerinfer upload {args.model} -s` to check the process.")
             
+            client.upload(args.local_dir)
             
+            print(f"Use `powerinfer upload {args.model} -c` to cancel the training process.")
+             
         except KeyboardInterrupt:
-            print("Upload stopped. Rerun the command to continue.")
+            client.cancel()
             return
+        
