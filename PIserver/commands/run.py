@@ -16,8 +16,9 @@ class Run_Model(Command):
         
     def register_subcommand(self, subparser):
         run_parser = subparser.add_parser("run", help="Run a large language model.")
-        run_parser.add_argument("model", help="The exact model file like model_name/model_file.gguf or model_dir/model_file.gguf Use `powerinfer list ")
+        run_parser.add_argument("model", help="The model to run. Can be a local model path or a remote model name.")
         run_parser.add_argument("-cfg","--config", default=None, help="The configuration file to use.")
+        run_parser.add_argument("--no-update", action="store_true", default=None, help="Do not update the model if it is outdated.")
         
     def execute(self, args):
         # check config file
@@ -38,10 +39,14 @@ class Run_Model(Command):
         row, rest = filter_rows(parse_condition(mname))
         mpath = None
         if len(row) == 0:
+            # check if it is local model dir
             mpath = mname if check_existence(mname) else None
         else:
             model_info = row[0]
             mpath = model_info[4] if check_existence(model_info[4]) else None
+            # TODO: check version, if this is the old one, update
+            if args.no_update is None:
+                pass
         if mpath is None:
             print(f"Unable to find model {mname} locally. Trying to download it from remote...")
             # download model from remote

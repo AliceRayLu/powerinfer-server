@@ -15,6 +15,9 @@ class Upload_Model(Command):
         upload_parser.add_argument("-c", "--cancel", default=None, help="Cancel existing training process.", action="store_true")
 
     def execute(self, args):
+        if ':' not in str(args.model):
+            log_error("Invalid model name. Please specify the size in the format NAME:SIZE.")
+            return
         if args.status is not None:
             response = send_post_request("/task/client/detail", params={
                 "mname": str(args.model).split(":")[0],
@@ -42,11 +45,8 @@ class Upload_Model(Command):
             return 
         
         try:
-            if ":" not in str(args.model):
-                log_error("Invalid model name. Please specify the size in the format NAME:SIZE .")
-                return
             print("Uploading model... Press Ctrl+C to cancel task.")
-            
+
             client.upload(args.local_dir)
              
         except KeyboardInterrupt:
