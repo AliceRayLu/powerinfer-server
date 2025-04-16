@@ -109,7 +109,7 @@ class FileUploadClient():
             "need_train": not no_train
         }
         if hf is not None and hf != "":
-            params["hf"] = hf
+            params["hf_path"] = hf
         response = send_post_request("/task/client/add", params=params)
         if response is None:
             log_error("Cannot successfully get response. Please check your internet connection.")

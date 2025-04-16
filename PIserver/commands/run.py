@@ -31,8 +31,11 @@ class Run_Model(Command):
         engine = self.check_engine(cfg['engine'])
         if engine is None:
             log_error(f"Unable to find {engine} in the installed list. Trying to install remote engine and find local files...")
-            # TODO: check local path
-            # TODO: check remote name
+            # check local path
+            engine = cfg['engine']
+            if not Path(engine).exists():
+                # TODO: check remote name
+                pass
         
         # check model existence
         mname = str(args.model)
@@ -105,6 +108,8 @@ class Run_Model(Command):
         if process.poll() is not None:
             out, err = process.communicate()
             log_error(f"Unable to start the model service. {out} {err}")
+            log_error("This could possibly be caused by unsupported model architecture or invalid engine. \
+                Please check your engine or leave an issure in the github respository.")
             return
         print("Start to load model...")
         pbar = tqdm(total=100, desc="Loading model", unit="%")
