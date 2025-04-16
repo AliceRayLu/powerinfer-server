@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 from PIserver.clients.FileUploadClient import FileUploadClient
 from PIserver.clients.net import send_post_request
 from PIserver.commands.command import Command
@@ -11,8 +12,9 @@ class Upload_Model(Command):
         upload_parser.add_argument("model", help="The remote model repository to upload.")
         upload_parser.add_argument("-d","--local-dir", default=None, help="The local model directory to upload.")
         upload_parser.add_argument("-hf", "--huggingface", default=None, help="Upload the model from huggingface hub.")
-        upload_parser.add_argument("-s", "--status", default=None, help="Query current training process status.", action="store_true")
+        upload_parser.add_argument("-s", "--status", default=None, help="Query current model training process status.", action="store_true")
         upload_parser.add_argument("-c", "--cancel", default=None, help="Cancel existing training process.", action="store_true")
+        upload_parser.add_argument("--no-train", default=False, help="Upload a model without training.", action="store_true")
 
     def execute(self, args):
         if ':' not in str(args.model):
@@ -33,9 +35,9 @@ class Upload_Model(Command):
             # {'tid': 'e8ec8383da200308f2f83fbfdf57589a', 'dir': 'D://train/73027646d141476489fd6dae05bdb217/testLlama-7b', 'version': 'd83d625b0d7683711c00bbd035eed394ea141609', 'id': 'c0ecd6558ad2e0838663e8b7b2c9bf9e', 'state': 'UPLOADING', 'created': '2025-03-27T20:56:30.123858', 'started': None, 'finished': None, 'queue': 0, 'progress': 0, 'waitingTime': 0, 'runningTime': 0}
             print("STATE: ", task["state"])
             print("version: ", task["version"])
-            print("Task created at: ", datetime.fromisoformat(task["created"]))
-            print("Task started at: ", datetime.fromisoformat(task["started"]) if task["started"] is not None else "--")
-            print("Task finished at: ", datetime.fromisoformat(task["finished"]) if task["finished"] is not None else "--")
+            print("Task created at: ", datetime.fromisoformat(task["created"]).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z%z"))
+            print("Task started at: ", datetime.fromisoformat(task["started"]).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z%z") if task["started"] is not None else "--")
+            print("Task finished at: ", datetime.fromisoformat(task["finished"]).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z%z") if task["finished"] is not None else "--")
             
             return
         
@@ -46,8 +48,10 @@ class Upload_Model(Command):
         
         try:
             print("Uploading model... Press Ctrl+C to cancel task.")
-
-            client.upload(args.local_dir)
+            if args.huggingface is not None:
+                client.upload(args.local_dir ,no_train=args.no_train, hf=args.huggingface)
+                return
+            client.upload(args.local_dir, no_train=args.no_train)
              
         except KeyboardInterrupt:
             client.cancel()

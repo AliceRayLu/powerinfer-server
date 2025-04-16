@@ -28,7 +28,7 @@ class FileUploadClient():
         return md5_hash.hexdigest()
 
 
-    def upload_file(self, path: Path) -> bool:
+    def upload_file(self, path: Path, need_train: bool) -> bool:
         file_size = path.stat().st_size
         uploaded_size = 0
         auth_header = getHeader()
@@ -39,7 +39,8 @@ class FileUploadClient():
                 "mname": self.mname, 
                 "tname": self.tname, 
                 "fname": path.name, 
-                "md5": self.generate_md5(path)
+                "md5": self.generate_md5(path),
+                "need_train": need_train
             })
         )
         if response.status_code == 403:
@@ -67,7 +68,12 @@ class FileUploadClient():
                     response = requests.patch(
                         backend_host+"/task/client/upload", 
                         headers=headers, 
-                        params={"mname": self.mname, "tname": self.tname, "fname": path.name}, 
+                        params={
+                            "mname": self.mname, 
+                            "tname": self.tname, 
+                            "fname": path.name,
+                            "need_train": need_train
+                        }, 
                         data=chunk
                     )
                     
@@ -79,22 +85,32 @@ class FileUploadClient():
                         return False
         return True
     
-    def iter_folder(self, path: Path):
+    def iter_folder(self, path: Path, need_train: bool):
+        print(f"Iterating folder {str(path)}...")
         success = True 
-        if path.is_file():
-            success = success or self.upload_file(path)
-        elif path.is_dir():
+        if path.is_file() and not path.name.startswith("."):
+            success = self.upload_file(path, need_train) and success
+        elif path.is_dir() and not path.name.startswith("."):
             for file in path.iterdir():
-                if file.is_file():
-                    success = success or self.upload_file(file)
+                if file.is_file() and not file.name.startswith("."):
+                    success = self.upload_file(file, need_train) and success
+                elif file.is_dir() and not file.name.startswith("."):
+                    success = self.iter_folder(file, need_train) and success
         return success
                     
-    def upload(self, file_path):
-        if not Path(file_path).exists():
+    def upload(self, file_path, no_train: bool = False, hf: str = ""):
+        if hf == "" and not Path(file_path).exists():
             log_error(f"Folder {file_path} does not exist.")
             return
         
-        response = send_post_request("/task/client/add", params={"mname": self.mname, "tname": self.tname})
+        params = {
+            "mname": self.mname,
+            "tname": self.tname,
+            "need_train": not no_train
+        }
+        if hf is not None and hf != "":
+            params["hf"] = hf
+        response = send_post_request("/task/client/add", params=params)
         if response is None:
             log_error("Cannot successfully get response. Please check your internet connection.")
             return
@@ -102,7 +118,17 @@ class FileUploadClient():
         if response.status_code == 403:
             log_error(response.text)
             return
-        success = self.iter_folder(Path(file_path))
+        if response.status_code != 200:
+            log_error(f"Failed to upload. Please try it later.")
+            return
+        
+        if hf is not None and hf != "":
+            print(f"Uploading huggingface model {hf} to {self.mname+":"+self.tname} task submitted successfully.")
+            print(f"Use `powerinfer upload {self.mname+":"+self.tname} -s` to check the process.")
+            return
+        
+        success = self.iter_folder(Path(file_path), need_train=not no_train)
+        
         send_post_request("/task/client/done", params={"mname": self.mname, "tname": self.tname, "success": success})
         if success:      
             print(f"Upload successfully. Visit xxx.com or use `powerinfer upload {self.mname+":"+self.tname} -s` to check the process.")
@@ -132,5 +158,5 @@ class FileUploadClient():
         if response.text == "true":
             print("Cancelled successfully.")
         else:
-            print("Training task not found.")
+            print("No running task found.")
         

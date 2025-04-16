@@ -1,7 +1,7 @@
 from pathlib import Path
 from enum import Enum
 
-POWERINFER_HOST = "127.0.0.1"
+POWERINFER_HOST = "192.168.1.82"
 POWERINFER_MODEL_HOST = POWERINFER_HOST # TODO: keep the same with backend host for now
 POWERINFER_LOCAL_MODEL_HOST = "http://127.0.0.1:8080/completion"
 POWERINFER_SERVER_PORT = 8088

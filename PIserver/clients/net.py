@@ -27,22 +27,7 @@ def getHeader():
         hashes.SHA256()
     )
     signature_b64 = base64.b64encode(signature).decode('utf-8')
-    
     return {"pubkey": pubkey, "timestamp": timestamp, "signature": signature_b64, "Content-Type": "application/json"}
-
-# def send_get_request(
-#     url: str, 
-#     data: Optional[Dict[str, Any]] = None
-# ) -> Optional[Dict[str, Any]]:
-#     try:
-#         response = requests.get(
-#             backend_host + url, 
-#             data=data
-#             ).json()
-#         return response
-#     except Exception as e:
-#         log_error(f"Cannot successfully get response. {e}")
-#         return None
     
 def send_post_request(url: str, data=None, stream: bool = False, header: dict=None, params:dict = None) -> Optional[requests.Response]:
     try:
