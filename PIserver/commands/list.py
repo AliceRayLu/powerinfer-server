@@ -1,5 +1,6 @@
 from PIserver.commands.command import Command
 from PIserver.constants import *
+from PIserver.setup import set_up
 from PIserver.utils.files import *
 
 
@@ -10,6 +11,8 @@ class List_Models(Command):
         list_parser.add_argument("-i","--install", default=None, help="List all the backend engine packages.", action="store_true")
         
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         mname = args.model
         if args.install is not None:
             if args.model is not None:

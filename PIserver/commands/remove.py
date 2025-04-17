@@ -1,4 +1,5 @@
 from PIserver.commands.command import Command
+from PIserver.setup import set_up
 from PIserver.utils.files import *
 
 class Remove_Models(Command):
@@ -8,6 +9,8 @@ class Remove_Models(Command):
         rm_parser.add_argument("-i","--install", default=None, help="Remove the selected backend engine package.", action="store_true")
         
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         if args.install is not None:
             if args.model is None:
                 log_error("Please specify the engine name to remove.")

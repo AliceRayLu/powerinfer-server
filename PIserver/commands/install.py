@@ -1,5 +1,6 @@
 from PIserver.commands.command import Command
 from PIserver.install import local_compile
+from PIserver.setup import set_up
 from PIserver.utils.install import *
 from PIserver.constants import DEFAULT_ENGINE_NAME
 from PIserver.utils.files import *
@@ -12,6 +13,8 @@ class Install_Backend(Command):
         install_parser.add_argument("-c","--compile", help="Download the source code and compile it automatically. Require c compilers and cmake installed.")
         
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         engine_name = None
         if args.file is not None and args.engine is None:
             log_error("Please specify the engine name in order to use.")

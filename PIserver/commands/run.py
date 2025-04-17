@@ -4,6 +4,7 @@ from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
 from PIserver.install import local_compile
+from PIserver.setup import set_up
 from PIserver.utils.files import *
 import subprocess
 from tqdm import tqdm
@@ -22,6 +23,8 @@ class Run_Model(Command):
         run_parser.add_argument("--no-update", action="store_true", default=None, help="Do not update the model if it is outdated.")
         
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         # check config file
         cfg = self.check_config(args.config)
 
@@ -31,7 +34,7 @@ class Run_Model(Command):
             
             if engine is not None:
                 add_engine(DEFAULT_ENGINE_NAME, engine)
-                cfg['engine'] = engine
+                cfg['engine'] = DEFAULT_ENGINE_NAME
                 write_file(DEFAULT_CONFIG_FILE, cfg)
                 print("Engine successfully installed.")
             else:
@@ -52,12 +55,16 @@ class Run_Model(Command):
         
         # check model existence
         mname = str(args.model)
+        if ':' not in mname or '/' not in mname: 
+            log_error("Invalid model name. Format the model name like 'USR/NAME:SIZE'.")
+            return
         row, rest = filter_rows(parse_condition(mname))
         mpath = None
         if len(row) == 0:
             # check if it is local model dir
             mpath = mname if check_existence(mname) else None
         else:
+            print("Found model locally.")
             model_info = row[0]
             mpath = model_info[4] if check_existence(model_info[4]) else None
         if mpath is None or args.no_update is None:
@@ -88,7 +95,8 @@ class Run_Model(Command):
                     print(f"Model {mname} is outdated. Downloading new version...")
                     print(f"Downloading model {mname} from remote...")
                     if client.download(local_path, info["dir_info"]):
-                        add_row([mname, tname, info["size"], info["version"], str(local_path)])
+                        name = uname + "/" + mname if uname != "" else mname
+                        add_row([name, tname, info["size"], info["version"], str(local_path)])
                         mpath = str(local_path)
             except KeyboardInterrupt:
                 print("Download stopped.")
@@ -114,7 +122,7 @@ class Run_Model(Command):
         print(f"Running model with command: {cmd}")
         
         process = subprocess.Popen(
-            cmd,
+            cmd.split(),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )

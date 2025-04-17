@@ -1,5 +1,7 @@
+from pathlib import Path
 from PIserver.commands.command import Command
-from PIserver.constants import DEFAULT_CONFIG, DEFAULT_CONFIG_FILE
+from PIserver.constants import DEFAULT_CONFIG, DEFAULT_CONFIG_FILE, DEFAULT_STORAGE_PATH
+from PIserver.setup import set_up
 from PIserver.utils.files import read_file, write_file, log_error
 
 class Config(Command):
@@ -13,6 +15,8 @@ class Config(Command):
         group.add_argument("-cp", "--copy", default=None, help="Copy a config file into a new location.")
     
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         if args.list is not None:
             config = read_file(DEFAULT_CONFIG_FILE)
             print("Current configurations:")

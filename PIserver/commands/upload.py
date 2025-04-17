@@ -1,7 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 from PIserver.clients.FileUploadClient import FileUploadClient
 from PIserver.clients.net import send_post_request
 from PIserver.commands.command import Command
+from PIserver.constants import DEFAULT_STORAGE_PATH
+from PIserver.setup import set_up
 from PIserver.utils.files import log_error
 
 
@@ -16,6 +19,8 @@ class Upload_Model(Command):
         upload_parser.add_argument("--no-train", default=False, help="Upload a model without training.", action="store_true")
 
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         if ':' not in str(args.model):
             log_error("Invalid model name. Please specify the size in the format NAME:SIZE.")
             return

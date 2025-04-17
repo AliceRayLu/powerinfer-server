@@ -1,5 +1,6 @@
 from PIserver.clients.FileDownloadClient import FileDownloadClient
 from PIserver.commands.command import Command
+from PIserver.setup import set_up
 from PIserver.utils.files import *
 from PIserver.constants import *
 from pathlib import Path
@@ -14,6 +15,8 @@ class Clone_Model(Command):
         clone_parser.add_argument("-hf", help="Clone a runnable gguf model from huggingface.")
         
     def execute(self, args):
+        if not Path(DEFAULT_STORAGE_PATH).exists():
+            set_up()
         mname = args.model
         mname, tname = check_model_name_with_size(mname)
         
@@ -49,7 +52,8 @@ class Clone_Model(Command):
         
         mname, uname = get_uname_from_model(mname)
         print(f"Trying to clone model {mname} size {tname}...")
-        if tname == "":
+        if tname == "" or uname == "":
+            log_error("Invalid model name. Format the model name like 'USR/NAME:SIZE'.")
             return
         # check remote access
         getModelRequest = {
@@ -72,7 +76,8 @@ class Clone_Model(Command):
                 return
             # download & add to local model list    
             if client.download(local_path, structure):
-                add_row([mname, tname, info["size"], info["version"], str(local_path)])
+                name = uname + "/" + mname if uname != "" else mname
+                add_row([name, tname, info["size"], info["version"], str(local_path)])
         except KeyboardInterrupt:
             print("Download stopped.")
             return
