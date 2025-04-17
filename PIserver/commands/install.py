@@ -12,6 +12,7 @@ class Install_Backend(Command):
         install_parser.add_argument("-c","--compile", help="Download the source code and compile it automatically. Require c compilers and cmake installed.")
         
     def execute(self, args):
+        engine_name = None
         if args.file is not None and args.engine is None:
             log_error("Please specify the engine name in order to use.")
             return
@@ -28,13 +29,10 @@ class Install_Backend(Command):
             if not res:
                 return
             
-            print("Modifying default config file: change engine to default-cuda...")
-            config = read_file(DEFAULT_CONFIG_FILE)
-            config["engine"] = DEFAULT_ENGINE_NAME
-            write_file(DEFAULT_CONFIG_FILE, config)
-            print("Successfully installed the engine and modified the default config file.")
+            engine_name = DEFAULT_ENGINE_NAME
             
         if args.engine is not None:
+            engine_name = args.engine
             if args.file is None:
                 if args.engine not in list(get_engine_choices().keys()):
                     log_error(f"Engine {args.engine} not found. Please check the name or use `powerinfer list -i` to see all the available engines or install engine compiled by yourself using -f.")
@@ -50,6 +48,12 @@ class Install_Backend(Command):
                     return
         else:
             interactive_install()
+            
+        if engine_name is not None:
+            config = read_file(DEFAULT_CONFIG_FILE)
+            config["engine"] = engine_name
+            write_file(DEFAULT_CONFIG_FILE, config)
+            
         print("Engine successfully installed.")
         
     
