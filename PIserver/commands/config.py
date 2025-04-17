@@ -9,7 +9,7 @@ class Config(Command):
         group.add_argument("-l","--list", default=None, help="Show current configurations", action="store_true")
         group.add_argument("-r","--reset", default=None, help="Change the config back into default values.", action="store_true")
         group.add_argument("-s","--set", default=None, help="Set the config in the format option=value.")
-        group.add_argument("-rmv", "--remove", default=None, help="Remove a config option.")
+        group.add_argument("-rm", "--remove", default=None, help="Remove a config option.")
         group.add_argument("-cp", "--copy", default=None, help="Copy a config file into a new location.")
     
     def execute(self, args):

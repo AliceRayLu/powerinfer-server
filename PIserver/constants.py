@@ -25,10 +25,10 @@ CHUNK_SIZE = 1024 * 1024 * 10  # 10MB per chunk
 
 # Engine Choices
 WINDOWS_ENGINE_CHOICES = {
-    "windows-cpu-x64-843195e": "1mmmmm",
-    "windows-cpu-x86": "2",
-    "windows-cuda-x64": "3",
-    "windows-cuda-x86": "4",
+    "windows-cpu-x64-843195e": "",
+    "windows-cpu-x86": "",
+    "windows-cuda-x64": "",
+    "windows-cuda-x86": "",
 
 }
 
@@ -44,9 +44,11 @@ ENGINE_CHOICES = {
     "Darwin": MAC_ENGINE_CHOICES
 }
 
+DEFAULT_ENGINE_NAME = "default-cuda"
+
 DEFAULT_CONFIG = {
     "model_path": str(DEFAULT_MODEL_PATH),
-    "engine": "powerinfer-server-windows-cpu-x86-843195e",
+    # "engine": str(DEFAULT_STORAGE_PATH / "PowerInfer" / "build" / "bin" / "server"),
     "options": {
         "n_predict": 512,
         "top_k": 40,

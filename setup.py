@@ -1,15 +1,8 @@
 from setuptools import setup
 from setuptools.command.install import install
-import pathlib
-
-DEFAULT_STORAGE_PATH = pathlib.Path.home() / ".powerinfer"
-DEFAULT_CONFIG_PATH = DEFAULT_STORAGE_PATH / "config.json"
-DEFAULT_MODEL_PATH = DEFAULT_STORAGE_PATH / "models"
-DEFAULT_SSH_PUB_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa.pub"
-DEFAULT_SSH_PEM_KEY_PATH = DEFAULT_STORAGE_PATH / "id_rsa"
-DEFAULT_MODEL_LIST_FILE = DEFAULT_MODEL_PATH / "models.csv"
-DEFAULT_INSTALL_PATH = DEFAULT_STORAGE_PATH / "engines"
-DEFAULT_ENGINE_LIST_FILE = DEFAULT_INSTALL_PATH / "list.json"
+from PIserver.constants import *
+from PIserver.install import local_compile
+from PIserver.utils.files import add_engine, log_error
 
 LOCAL_LIST_HEADER = ['MODEL_NAME', 'SIZE', 'BSIZE', 'VERSION', 'PATH']
 
@@ -27,6 +20,12 @@ def generate_model_list_file():
     with open(DEFAULT_MODEL_LIST_FILE, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(LOCAL_LIST_HEADER)
+        
+def generating_config_file():
+    import json
+    DEFAULT_CONFIG_FILE.touch(0o755, exist_ok=True)
+    with open(DEFAULT_CONFIG_FILE, 'w') as f:
+        json.dump(DEFAULT_CONFIG, f, indent=4)
 
 class PostInstallCommand(install):
     def run(self):
@@ -37,12 +36,22 @@ class PostInstallCommand(install):
         DEFAULT_MODEL_PATH.mkdir(0o755, parents=True, exist_ok=True)
         # generate_ssh_key() # FIXME: add ssh-key in production; in test don't change
         generate_model_list_file()
-        DEFAULT_CONFIG_PATH.touch(0o755, exist_ok=True)
+        
         DEFAULT_INSTALL_PATH.mkdir(0o755, parents=True, exist_ok=True)
         DEFAULT_ENGINE_LIST_FILE.touch(0o755, exist_ok=True)
         
-        # TODO: automatically install engine (checking sys and backend)
-
+        # compile and install the engine
+        # try:
+        #     engine_path = local_compile()
+        #     if engine_path is not None:
+        #         add_engine(DEFAULT_ENGINE_NAME, engine_path)
+        #         DEFAULT_CONFIG["engine"] = DEFAULT_ENGINE_NAME
+        # except Exception as e:
+        #     log_error(f"Failed to compile the engine: {e}")
+        #     print("Skipping engine installation. You can install it later using `powerinfer install` command.")
+        
+        
+        generating_config_file()
 
 setup(
     name='powerinfer-server',

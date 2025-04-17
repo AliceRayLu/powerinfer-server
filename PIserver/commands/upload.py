@@ -1,5 +1,4 @@
 from datetime import datetime
-import time
 from PIserver.clients.FileUploadClient import FileUploadClient
 from PIserver.clients.net import send_post_request
 from PIserver.commands.command import Command

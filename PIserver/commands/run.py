@@ -3,6 +3,7 @@ from PIserver.clients.LLMClient import *
 from PIserver.commands.command import Command
 from PIserver.constants import *
 from pathlib import Path
+from PIserver.install import local_compile
 from PIserver.utils.files import *
 import subprocess
 from tqdm import tqdm
@@ -26,16 +27,28 @@ class Run_Model(Command):
 
         # check backend engine
         if 'engine' not in cfg:
-            log_error("Must specify the backend engine in the configuration file!")
-            return
-        engine = self.check_engine(cfg['engine'])
+            engine = local_compile()
+            
+            if engine is not None:
+                add_engine(DEFAULT_ENGINE_NAME, engine)
+                cfg['engine'] = engine
+                write_file(DEFAULT_CONFIG_FILE, cfg)
+                print("Engine successfully installed.")
+            else:
+                log_error("Unable to compile engine. \
+                    Please compile the code from PowerInfer repo https://github.com/SJTU-IPADS/PowerInfer manually and install it in order to use.")
+                return
+        else:    
+            engine = self.check_engine(cfg['engine'])
+            
         if engine is None:
             log_error(f"Unable to find {engine} in the installed list. Trying to install remote engine and find local files...")
             # check local path
             engine = cfg['engine']
             if not Path(engine).exists():
-                # TODO: check remote name
-                pass
+                log_error(f"Unable to find {engine} locally. Please install the engine first.")
+                return
+                
         
         # check model existence
         mname = str(args.model)
@@ -47,11 +60,7 @@ class Run_Model(Command):
         else:
             model_info = row[0]
             mpath = model_info[4] if check_existence(model_info[4]) else None
-            # TODO: check version, if this is the old one, update
-            if args.no_update is None:
-                pass
-        if mpath is None:
-            print(f"Unable to find model {mname} locally. Trying to download it from remote...")
+        if mpath is None or args.no_update is None:
             # download model from remote
             client = FileDownloadClient()
             local_dir_name = str(args.model).replace(":", "-").replace("/", "-")
@@ -73,9 +82,14 @@ class Run_Model(Command):
                 info = client.getModelInfo(getModelRequest)
                 if info is None:
                     return 
-                if client.download(local_path, info["dir_info"]):
-                    add_row([mname, tname, info["size"], info["version"], str(local_path)])
-                    mpath = str(local_path)
+                if mpath is not None and row[0][3] == info["version"]:
+                    print(f"Model {mname} is up to date.")
+                else:
+                    print(f"Model {mname} is outdated. Downloading new version...")
+                    print(f"Downloading model {mname} from remote...")
+                    if client.download(local_path, info["dir_info"]):
+                        add_row([mname, tname, info["size"], info["version"], str(local_path)])
+                        mpath = str(local_path)
             except KeyboardInterrupt:
                 print("Download stopped.")
                 return
