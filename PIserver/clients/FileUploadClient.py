@@ -123,16 +123,16 @@ class FileUploadClient():
             return
         
         if hf is not None and hf != "":
-            print(f"Uploading huggingface model {hf} to {self.mname+":"+self.tname} task submitted successfully.")
-            print(f"Use `powerinfer upload {self.mname+":"+self.tname} -s` to check the process.")
+            print(f"Uploading huggingface model {hf} to {self.mname+':'+self.tname} task submitted successfully.")
+            print(f"Use `powerinfer upload {self.mname+':'+self.tname} -s` to check the process.")
             return
         
         success = self.iter_folder(Path(file_path), need_train=not no_train)
         
         send_post_request("/task/client/done", params={"mname": self.mname, "tname": self.tname, "success": success})
         if success:      
-            print(f"Upload successfully. Visit xxx.com or use `powerinfer upload {self.mname+":"+self.tname} -s` to check the process.")
-            print(f"Use `powerinfer upload {self.mname+":"+self.tname} -c` to cancel the training process.")
+            print(f"Upload successfully. Visit xxx.com or use `powerinfer upload {self.mname+':'+self.tname} -s` to check the process.")
+            print(f"Use `powerinfer upload {self.mname+':'+self.tname} -c` to cancel the training process.")
         else:
             log_error("Upload failed. Please rerun the command to resume uploading model.")
             return
@@ -150,7 +150,7 @@ class FileUploadClient():
     #             yield None
         
     def cancel(self):
-        print("Starting to cancel training task for model", self.mname + ":" + self.tname)
+        print("Starting to cancel training task for model", self.mname + ':' + self.tname)
         response = send_post_request("/task/client/cancel", params={"mname": self.mname, "tname": self.tname})
         if response is None:
             log_error("Cannot successfully get response. Please check your internet connection.")

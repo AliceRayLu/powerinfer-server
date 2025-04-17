@@ -57,8 +57,6 @@ DEFAULT_CONFIG = {
         "temp": 0.7,
         "stop": ["\nUser: "]
     },
-    "ctx-size": 512,
-    "gpu-layers": 32,
     "system-prompt": "Transcript of a never ending dialog, where the User interacts with an Assistant.\nThe Assistant is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.\nUser: Hi, Who are you?\n Assistant: I'm a helpful AI assistant. How can I help you today?\n",
 }
 

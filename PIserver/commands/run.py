@@ -117,7 +117,7 @@ class Run_Model(Command):
         cmd = f"{engine} -m {str(mpath)} -np 4"
         for option in cfg:
             if self.filter_options(option):
-                cmd += f" --{option} {cfg[option] if type(cfg[option]) is not bool else ""}"
+                cmd += f" --{option} {cfg[option] if type(cfg[option]) is not bool else ''}"
                 
         print(f"Running model with command: {cmd}")
         
