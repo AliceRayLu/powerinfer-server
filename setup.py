@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='powerinfer-server',
-    version='1.0.4',
+    version='1.1.0',
     author='ARL',
     install_requires=[
         "fastapi>=0.68.0",
