@@ -6,7 +6,7 @@ from PIserver.utils.files import *
 
 class List_Models(Command):
     def register_subcommand(self, subparser):
-        list_parser = subparser.add_parser("list", help="Show local(default) or remote models. Show backend engines.")
+        list_parser = subparser.add_parser("list", help="Show local models. Show backend engines.")
         list_parser.add_argument("model", nargs='?', default=None, help="The model name to list. (Optional)")
         list_parser.add_argument("-i","--install", default=None, help="List all the backend engine packages.", action="store_true")
         
