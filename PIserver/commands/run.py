@@ -55,18 +55,19 @@ class Run_Model(Command):
         
         # check model existence
         mname = str(args.model)
-        if ':' not in mname or '/' not in mname: 
-            log_error("Invalid model name. Format the model name like 'USR/NAME:SIZE'.")
-            return
-        row, rest = filter_rows(parse_condition(mname))
-        mpath = None
-        if len(row) == 0:
-            # check if it is local model dir
-            mpath = mname if check_existence(mname) else None
-        else:
-            print("Found model locally.")
-            model_info = row[0]
-            mpath = model_info[4] if check_existence(model_info[4]) else None
+        mpath = mname if check_existence(mname) else None
+        if mpath is None:
+            if ':' not in mname or '/' not in mname: 
+                log_error("Invalid model name. Format the model name like 'USR/NAME:SIZE'.")
+                return
+            row, rest = filter_rows(parse_condition(mname))
+        
+            if len(row) == 0:
+                print("Model not found locally. Downloading from remote...")
+            else:
+                print("Found model locally.")
+                model_info = row[0]
+                mpath = model_info[4] if check_existence(model_info[4]) else None
         if mpath is None or args.no_update is None:
             # download model from remote
             client = FileDownloadClient()
@@ -92,7 +93,8 @@ class Run_Model(Command):
                 if mpath is not None and row[0][3] == info["version"]:
                     print(f"Model {mname} is up to date.")
                 else:
-                    print(f"Model {mname} is outdated. Downloading new version...")
+                    if mpath is not None:
+                        print(f"Model {mname} is outdated. Downloading new version...")
                     print(f"Downloading model {mname} from remote...")
                     if client.download(local_path, info["dir_info"]):
                         name = uname + "/" + mname if uname != "" else mname
